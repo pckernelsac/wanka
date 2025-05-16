@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+
+{% block title %}Consultar Traducciones - Traductor Quechua Chanka{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="p-6 sm:p-10">
+            <div class="flex items-center mb-6">
+                <i class="fas fa-headphones text-3xl text-emerald-600 mr-4"></i>
+                <h1 class="text-3xl font-bold text-gray-800">Consultar traducciones</h1>
+            </div>
+            
+            <div class="mb-8">
+                <p class="text-gray-600">
+                    Escribe una palabra en español para encontrar su traducción al quechua chanka y escuchar su pronunciación auténtica.
+                    <span class="text-emerald-600 font-medium">¡Aprende mientras escuchas! 🎧</span>
+                </p>
+            </div>
+            
+            <!-- Buscador -->
+            <div class="mb-10">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                    <input type="text" id="search-input" 
+                        class="w-full pl-10 pr-20 py-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-lg"
+                        placeholder="Buscar palabra en español...">
+                    <button id="clear-search" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 hidden">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Resultados de búsqueda -->
+            <div id="search-results" class="mb-10 hidden">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Resultados de búsqueda</h2>
+                
+                <div id="results-container">
+                    <!-- Contenido generado dinámicamente con JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Sin resultados -->
+            <div id="no-results" class="text-center py-8 hidden">
+                <div class="text-5xl mb-4">🔍</div>
+                <h3 class="text-xl font-medium text-gray-800 mb-2">No se encontraron resultados</h3>
+                <p class="text-gray-600">Intenta con otra palabra o revisa la ortografía</p>
+            </div>
+            
+            <!-- Mensaje inicial -->
+            <div id="initial-message" class="text-center py-10">
+                <div class="text-6xl mb-6">🔤</div>
+                <h3 class="text-xl font-medium text-gray-800 mb-3">Comienza a escribir para buscar una palabra</h3>
+                <p class="text-gray-600">Tenemos muchas palabras en quechua chanka con su pronunciación</p>
+            </div>
+            
+            <!-- Traducciones populares -->
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Traducciones populares</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4" id="popular-translations">
+                    <!-- Contenido generado dinámicamente con JavaScript -->
+                    <div class="p-4 border border-gray-200 rounded-lg animate-pulse">
+                        <div class="h-5 bg-gray-200 rounded mb-2 w-3/4"></div>
+                        <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+                    </div>
+                    <div class="p-4 border border-gray-200 rounded-lg animate-pulse">
+                        <div class="h-5 bg-gray-200 rounded mb-2 w-3/4"></div>
+                        <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+                    </div>
+                    <div class="p-4 border border-gray-200 rounded-lg animate-pulse">
+                        <div class="h-5 bg-gray-200 rounded mb-2 w-3/4"></div>
+                        <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Añadir sección de login/registro si no es usuario registrado -->
+            {% if not session.get('user_id') %}
+            <div class="mt-12 bg-indigo-50 rounded-lg p-6 border border-indigo-100">
+                <div class="flex flex-col md:flex-row items-center justify-between">
+                    <div class="mb-4 md:mb-0 md:mr-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">¿Quieres contribuir al traductor?</h3>
+                        <p class="text-gray-600">Regístrate para guardar tus palabras favoritas y solicitar ser traductor</p>
+                    </div>
+                    <div class="flex space-x-4">
+                        <a href="{{ url_for('login') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                            Iniciar sesión
+                        </a>
+                        <a href="{{ url_for('register') }}" class="bg-white hover:bg-gray-50 text-indigo-600 border border-indigo-200 px-4 py-2 rounded-lg font-medium transition-colors">
+                            Registrarse
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        loadPopularTranslations();
+        
+        const searchInput = document.getElementById('search-input');
+        const clearSearch = document.getElementById('clear-search');
+        
+        // Configurar el buscador
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.trim();
+            
+            if (searchTerm.length > 0) {
+                clearSearch.classList.remove('hidden');
+                searchTranslations(searchTerm);
+            } else {
+                clearSearch.classList.add('hidden');
+                hideResults();
+            }
+        });
+        
+        // Configurar el botón de limpiar
+        clearSearch.addEventListener('click', function() {
+            searchInput.value = '';
+            clearSearch.classList.add('hidden');
+            hideResults();
+        });
+    });
+    
+    function hideResults() {
+        document.getElementById('search-results').classList.add('hidden');
+        document.getElementById('no-results').classList.add('hidden');
+        document.getElementById('initial-message').classList.remove('hidden');
+    }
+    
+    function searchTranslations(query) {
+        if (query.length < 2) return;
+        
+        fetch(`/api/search?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                const resultsContainer = document.getElementById('results-container');
+                document.getElementById('initial-message').classList.add('hidden');
+                
+                if (data.length === 0) {
+                    document.getElementById('search-results').classList.add('hidden');
+                    document.getElementById('no-results').classList.remove('hidden');
+                    return;
+                }
+                
+                document.getElementById('search-results').classList.remove('hidden');
+                document.getElementById('no-results').classList.add('hidden');
+                
+                resultsContainer.innerHTML = '';
+                
+                data.forEach(item => {
+                    const downloadButton = item.allow_download 
+                        ? `<a href="/audio/${item.audio_path}" download class="text-emerald-600 hover:text-emerald-800 transition-colors ml-3">
+                             <i class="fas fa-download"></i>
+                           </a>` 
+                        : '';
+                    
+                    resultsContainer.innerHTML += `
+                        <div class="bg-gray-50 rounded-lg p-5 mb-4 border border-gray-200">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-800">${item.spanish_word}</h3>
+                                    <p class="text-emerald-600 font-medium mt-1">${item.quechua_word}</p>
+                                    <p class="text-xs text-gray-500 mt-2">
+                                        <i class="fas fa-user mr-1"></i> Traductor: ${item.translator || 'Anónimo'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <button class="play-audio text-emerald-600 hover:text-emerald-800 transition-colors" 
+                                        data-audio="/audio/${item.audio_path}">
+                                        <i class="fas fa-play-circle text-2xl"></i>
+                                    </button>
+                                    ${downloadButton}
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <audio src="/audio/${item.audio_path}" controls class="w-full"></audio>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                // Configurar botones de reproducción
+                setupAudioButtons();
+            })
+            .catch(error => {
+                console.error('Error al buscar traducciones:', error);
+            });
+    }
+    
+    function loadPopularTranslations() {
+        fetch('/api/translations')
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('popular-translations');
+                container.innerHTML = '';
+                
+                if (data.length === 0) {
+                    container.innerHTML = `
+                        <div class="col-span-3 text-center py-4">
+                            <p class="text-gray-500">No hay traducciones disponibles aún</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Mostrar hasta 6 traducciones populares
+                const popularData = data.slice(0, 6);
+                
+                popularData.forEach(item => {
+                    const downloadButton = item.allow_download 
+                        ? `<a href="/audio/${item.audio_path}" download class="text-emerald-600 hover:text-emerald-800 transition-colors ml-2">
+                             <i class="fas fa-download text-sm"></i>
+                           </a>` 
+                        : '';
+                    
+                    container.innerHTML += `
+                        <div class="p-4 border border-gray-200 rounded-lg hover:border-emerald-300 hover:shadow-sm transition-all">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="font-medium text-gray-800">${item.spanish_word}</h3>
+                                    <p class="text-sm text-emerald-600 mt-1">${item.quechua_word}</p>
+                                </div>
+                                <div class="flex">
+                                    <button class="play-audio text-emerald-600 hover:text-emerald-800 transition-colors" 
+                                        data-audio="/audio/${item.audio_path}">
+                                        <i class="fas fa-play-circle text-xl"></i>
+                                    </button>
+                                    ${downloadButton}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                // Configurar botones de reproducción
+                setupAudioButtons();
+            })
+            .catch(error => {
+                console.error('Error al cargar traducciones populares:', error);
+                document.getElementById('popular-translations').innerHTML = `
+                    <div class="col-span-3 text-center py-4">
+                        <p class="text-red-500">Error al cargar las traducciones</p>
+                    </div>
+                `;
+            });
+    }
+    
+    function setupAudioButtons() {
+        // Variables para el reproductor global
+        let currentAudio = null;
+        let currentButton = null;
+        
+        const audioButtons = document.querySelectorAll('.play-audio');
+        audioButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const audioSrc = this.getAttribute('data-audio');
+                
+                // Si ya hay un audio reproduciéndose, lo detenemos
+                if (currentAudio) {
+                    currentAudio.pause();
+                    if (currentButton) {
+                        const prevIcon = currentButton.querySelector('i');
+                        prevIcon.classList.remove('fa-pause-circle');
+                        prevIcon.classList.add('fa-play-circle');
+                    }
+                }
+                
+                // Si es el mismo botón, alternar reproducción/pausa
+                if (currentAudio && currentButton === this && !currentAudio.ended) {
+                    currentAudio = null;
+                    currentButton = null;
+                    return;
+                }
+                
+                // Reproducir nuevo audio
+                const audio = new Audio(audioSrc);
+                currentAudio = audio;
+                currentButton = this;
+                
+                const icon = this.querySelector('i');
+                icon.classList.remove('fa-play-circle');
+                icon.classList.add('fa-pause-circle');
+                
+                audio.play();
+                
+                audio.onended = function() {
+                    icon.classList.remove('fa-pause-circle');
+                    icon.classList.add('fa-play-circle');
+                    currentAudio = null;
+                    currentButton = null;
+                };
+            });
+        });
+    }
+    
+    // Guardar historia de búsqueda
+    function saveSearchHistory(term) {
+        let history = localStorage.getItem('search-history');
+        history = history ? JSON.parse(history) : [];
+        
+        // Evitar duplicados
+        if (!history.includes(term)) {
+            // Limitar a 10 términos
+            if (history.length >= 10) {
+                history.pop();
+            }
+            history.unshift(term);
+            localStorage.setItem('search-history', JSON.stringify(history));
+        }
+    }
+</script>
+{% endblock %}

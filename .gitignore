@@ -1,0 +1,44 @@
+# Entorno virtual
+venv/
+env/
+ENV/
+
+# Archivos de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+*.egg
+
+# Archivos de base de datos
+*.db
+*.sqlite
+*.sqlite3
+
+# Archivos de audio subidos
+static/audio/*
+!static/audio/.gitkeep
+
+# Logs
+*.log
+instance/
+
+# Archivos de entorno
+.env
+.env.local
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de Azure
+.azure/
+*.publishsettings
+
+# Archivos de IDE
+.idea/
+.vscode/
+*.swp
+*.swo

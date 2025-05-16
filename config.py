@@ -1,15 +1,35 @@
 import os
-import secrets
+from dotenv import load_dotenv
+
+# Cargar variables de entorno desde .env si existe
+load_dotenv()
 
 # Configuración general
-SECRET_KEY = os.environ.get('SECRET_KEY') or secrets.token_hex(16)
-DEBUG = True
+SECRET_KEY = os.environ.get('SECRET_KEY') or 'clave-super-secreta-quechua-chanka'
+DEBUG = os.environ.get('FLASK_ENV') == 'development'
+
+# Determinar si estamos en Azure
+IN_AZURE = os.environ.get('WEBSITE_HOSTNAME') is not None
 
 # Configuración de la base de datos
-DATABASE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'quechua_translator.db')
+if IN_AZURE:
+    # Ruta de base de datos en Azure (persistente)
+    DATABASE = os.path.join(os.environ.get('HOME', ''), 'site', 'wwwroot', 'quechua_translator.db')
+else:
+    # Ruta local
+    DATABASE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'quechua_translator.db')
 
 # Configuración de archivos
-AUDIO_FOLDER = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static', 'audio')
+if IN_AZURE:
+    # En Azure, usar una carpeta persistente
+    AUDIO_FOLDER = os.path.join(os.environ.get('HOME', ''), 'site', 'wwwroot', 'static', 'audio')
+else:
+    # Localmente
+    AUDIO_FOLDER = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static', 'audio')
+
+# Asegurar que existe la carpeta de audio
+os.makedirs(AUDIO_FOLDER, exist_ok=True)
+
 MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB max tamaño de archivo
 
 # Configuración de sesiones
@@ -26,4 +46,9 @@ MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD') or 'tu_contraseña'
 MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER') or 'noreply@quechuachanka.org'
 
 # URL base del sitio
-BASE_URL = os.environ.get('BASE_URL') or 'http://localhost:5000'
+if IN_AZURE:
+    # En Azure, usar el nombre del host
+    BASE_URL = f"https://{os.environ.get('WEBSITE_HOSTNAME')}"
+else:
+    # Localmente
+    BASE_URL = os.environ.get('BASE_URL') or 'http://localhost:5000'

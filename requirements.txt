@@ -1,5 +1,12 @@
-Flask==2.3.3
-Werkzeug==2.3.7
-Flask-Session==0.5.0
+# Gunicorn para ejecutar la aplicación
+gunicorn==20.1.0
+# Para el entorno de Azure
 python-dotenv==1.0.0
+# Para cargar archivos de audio
+Werkzeug==2.3.7
+# Flask principal
+Flask==2.3.3
+# Para manejar sesiones
+Flask-Session==0.5.0
+# Para enviar correos (verificación)
 Flask-Mail==0.9.1

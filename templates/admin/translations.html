@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+
+{% block title %}Gestionar Traducciones - Traductor Quechua Chanka{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="p-6 sm:p-10">
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center">
+                    <i class="fas fa-list-ul text-3xl text-indigo-600 mr-4"></i>
+                    <h1 class="text-3xl font-bold text-gray-800">Gestionar Traducciones</h1>
+                </div>
+                <a href="{{ url_for('admin_dashboard') }}" class="text-indigo-600 hover:text-indigo-800 font-medium flex items-center">
+                    <i class="fas fa-arrow-left mr-2"></i> Volver al panel
+                </a>
+            </div>
+            
+            <!-- Filtros y búsqueda -->
+            <div class="mb-8">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-grow">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                            <input type="text" id="search-input" 
+                                class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                placeholder="Buscar palabra...">
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <select id="status-filter" class="rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="all">Todos los estados</option>
+                            <option value="approved">Aprobados</option>
+                            <option value="pending">Pendientes</option>
+                        </select>
+                        <button id="refresh-btn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tabla de traducciones -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Español</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quechua</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Audio</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Traductor</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="translations-table">
+                        <tr>
+                            <td class="px-6 py-4 text-sm text-gray-500" colspan="7">Cargando traducciones...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Paginación -->
+            <div class="flex justify-between items-center mt-6">
+                <div class="text-sm text-gray-500" id="pagination-info">
+                    Mostrando <span id="showing-start">1</span> a <span id="showing-end">10</span> de <span id="total-items">25</span> traducciones
+                </div>
+                <div class="flex space-x-2">
+                    <button id="prev-page" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                        Anterior
+                    </button>
+                    <button id="next-page" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                        Siguiente
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de aprobación -->
+<div id="approval-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg max-w-lg w-full p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-gray-800">Confirmar aprobación</h3>
+            <button class="text-gray-500 hover:text-gray-700 focus:outline-none modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="mb-6">
+            <p class="text-gray-600">¿Estás seguro de que deseas aprobar la traducción?</p>
+            <div class="mt-4 bg-gray-50 p-4 rounded-lg">
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <p class="text-sm text-gray-500">Español:</p>
+                        <p class="font-medium" id="modal-spanish">casa</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Quechua:</p>
+                        <p class="font-medium" id="modal-quechua">wasi</p>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <p class="text-sm text-gray-500">Traductor:</p>
+                    <p class="font-medium" id="modal-translator">Juan Pérez</p>
+                </div>
+            </div>
+        </div>
+        <div class="flex justify-end space-x-3">
+            <button class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 modal-close">
+                Cancelar
+            </button>
+            <button id="confirm-approve" class="px-4 py-2 bg-green-600 rounded-md text-sm font-medium text-white hover:bg-green-700">
+                Aprobar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de eliminación -->
+<div id="delete-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg max-w-lg w-full p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-gray-800">Confirmar eliminación</h3>
+            <button class="text-gray-500 hover:text-gray-700 focus:outline-none modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="mb-6">
+            <p class="text-gray-600">¿Estás seguro de que deseas eliminar esta traducción? Esta acción no se puede deshacer.</p>
+            <div class="mt-4 bg-red-50 p-4 rounded-lg border border-red-100">
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <p class="text-sm text-gray-500">Español:</p>
+                        <p class="font-medium" id="delete-modal-spanish">casa</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Quechua:</p>
+                        <p class="font-medium" id="delete-modal-quechua">wasi</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="flex justify-end space-x-3">
+            <button class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 modal-close">
+                Cancelar
+            </button>
+            <button id="confirm-delete" class="px-4 py-2 bg-red-600 rounded-md text-sm font-medium text-white hover:bg-red-700">
+                Eliminar
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Simulación de datos para la tabla
+        // En una implementación real, estos datos vendrían de una API
+        const mockTranslations = [
+            { id: 1, spanish: 'casa', quechua: 'wasi', audio: 'audio1.webm', translator: 'Juan Pérez', status: 'approved' },
+            { id: 2, spanish: 'hombre', quechua: 'qhari', audio: 'audio2.webm', translator: 'María López', status: 'pending' },
+            { id: 3, spanish: 'mujer', quechua: 'warmi', audio: 'audio3.webm', translator: 'José García', status: 'approved' },
+            { id: 4, spanish: 'niño', quechua: 'wawa', audio: 'audio4.webm', translator: 'Ana Martínez', status: 'pending' },
+            { id: 5, spanish: 'agua', quechua: 'yaku', audio: 'audio5.webm', translator: 'Carlos Rodríguez', status: 'approved' }
+        ];
+        
+        // Cargar tabla
+        loadTranslationsTable(mockTranslations);
+        
+        // Configurar modales
+        setupModals();
+        
+        // Función para cargar la tabla de traducciones
+        function loadTranslationsTable(translations) {
+            const tableBody = document.getElementById('translations-table');
+            tableBody.innerHTML = '';
+            
+            if (translations.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td class="px-6 py-4 text-sm text-gray-500" colspan="7">
+                            No se encontraron traducciones
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            translations.forEach(item => {
+                const statusBadge = item.status === 'approved' 
+                    ? `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Aprobado</span>`
+                    : `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pendiente</span>`;
+                
+                const actions = item.status === 'pending'
+                    ? `
+                        <button class="text-green-600 hover:text-green-800 mr-3 approve-btn" data-id="${item.id}" data-spanish="${item.spanish}" data-quechua="${item.quechua}" data-translator="${item.translator}">
+                            <i class="fas fa-check-circle"></i>
+                        </button>
+                      `
+                    : '';
+                
+                tableBody.innerHTML += `
+                    <tr>
+                        <td class="px-6 py-4 text-sm text-gray-500">${item.id}</td>
+                        <td class="px-6 py-4 text-sm font-medium text-gray-900">${item.spanish}</td>
+                        <td class="px-6 py-4 text-sm text-indigo-600">${item.quechua}</td>
+                        <td class="px-6 py-4">
+                            <audio src="/audio/${item.audio}" controls class="h-8"></audio>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500">${item.translator}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            ${statusBadge}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            ${actions}
+                            <button class="text-blue-600 hover:text-blue-800 mr-3">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-red-600 hover:text-red-800 delete-btn" data-id="${item.id}" data-spanish="${item.spanish}" data-quechua="${item.quechua}">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            // Configurar botones de acción
+            document.querySelectorAll('.approve-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const spanish = this.getAttribute('data-spanish');
+                    const quechua = this.getAttribute('data-quechua');
+                    const translator = this.getAttribute('data-translator');
+                    
+                    document.getElementById('modal-spanish').textContent = spanish;
+                    document.getElementById('modal-quechua').textContent = quechua;
+                    document.getElementById('modal-translator').textContent = translator;
+                    
+                    document.getElementById('confirm-approve').setAttribute('data-id', id);
+                    document.getElementById('approval-modal').classList.remove('hidden');
+                });
+            });
+            
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const spanish = this.getAttribute('data-spanish');
+                    const quechua = this.getAttribute('data-quechua');
+                    
+                    document.getElementById('delete-modal-spanish').textContent = spanish;
+                    document.getElementById('delete-modal-quechua').textContent = quechua;
+                    
+                    document.getElementById('confirm-delete').setAttribute('data-id', id);
+                    document.getElementById('delete-modal').classList.remove('hidden');
+                });
+            });
+        }
+        
+        // Configurar modales
+        function setupModals() {
+            // Cerrar modales
+            document.querySelectorAll('.modal-close').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.getElementById('approval-modal').classList.add('hidden');
+                    document.getElementById('delete-modal').classList.add('hidden');
+                });
+            });
+            
+            // Botón de confirmar aprobación
+            document.getElementById('confirm-approve').addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                // Aquí iría la lógica para aprobar la traducción
+                alert('Traducción aprobada: ' + id);
+                document.getElementById('approval-modal').classList.add('hidden');
+            });
+            
+            // Botón de confirmar eliminación
+            document.getElementById('confirm-delete').addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                // Aquí iría la lógica para eliminar la traducción
+                alert('Traducción eliminada: ' + id);
+                document.getElementById('delete-modal').classList.add('hidden');
+            });
+        }
+    });
+</script>
+{% endblock %}

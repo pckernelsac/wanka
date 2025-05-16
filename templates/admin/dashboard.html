@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Panel de Administración - Traductor Quechua Chanka{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="p-6 sm:p-10">
+            <div class="flex items-center mb-8">
+                <i class="fas fa-cog text-3xl text-indigo-600 mr-4"></i>
+                <h1 class="text-3xl font-bold text-gray-800">Panel de Administración</h1>
+            </div>
+            
+            <!-- Resumen del sistema -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                <div class="bg-indigo-50 p-6 rounded-lg border border-indigo-100">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Traducciones</h3>
+                        <i class="fas fa-language text-2xl text-indigo-500"></i>
+                    </div>
+                    <div class="text-3xl font-bold text-indigo-600 mb-2" id="total-translations">-</div>
+                    <p class="text-sm text-gray-600">Total de traducciones en el sistema</p>
+                </div>
+                
+                <div class="bg-green-50 p-6 rounded-lg border border-green-100">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Aprobadas</h3>
+                        <i class="fas fa-check-circle text-2xl text-green-500"></i>
+                    </div>
+                    <div class="text-3xl font-bold text-green-600 mb-2" id="approved-translations">-</div>
+                    <p class="text-sm text-gray-600">Traducciones aprobadas</p>
+                </div>
+                
+                <div class="bg-yellow-50 p-6 rounded-lg border border-yellow-100">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Pendientes</h3>
+                        <i class="fas fa-clock text-2xl text-yellow-500"></i>
+                    </div>
+                    <div class="text-3xl font-bold text-yellow-600 mb-2" id="pending-translations">-</div>
+                    <p class="text-sm text-gray-600">Traducciones pendientes de aprobación</p>
+                </div>
+            </div>
+            
+            <!-- Acciones rápidas -->
+            <div class="mb-10">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Acciones rápidas</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <a href="{{ url_for('admin_translations') }}" class="flex items-center p-4 bg-white rounded-lg border border-gray-200 hover:bg-gray-50 hover:border-indigo-300 transition-colors">
+                        <div class="bg-indigo-100 p-3 rounded-lg mr-4">
+                            <i class="fas fa-list-ul text-indigo-600"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-medium text-gray-800">Gestionar traducciones</h3>
+                            <p class="text-sm text-gray-600">Aprobar, editar o eliminar traducciones</p>
+                        </div>
+                    </a>
+                    
+                    <a href="{{ url_for('admin_users') }}" class="flex items-center p-4 bg-white rounded-lg border border-gray-200 hover:bg-gray-50 hover:border-indigo-300 transition-colors">
+                        <div class="bg-indigo-100 p-3 rounded-lg mr-4">
+                            <i class="fas fa-users text-indigo-600"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-medium text-gray-800">Gestionar usuarios</h3>
+                            <p class="text-sm text-gray-600">Administrar permisos y roles</p>
+                        </div>
+                    </a>
+                    
+                    <a href="{{ url_for('translator_view') }}" class="flex items-center p-4 bg-white rounded-lg border border-gray-200 hover:bg-gray-50 hover:border-indigo-300 transition-colors">
+                        <div class="bg-indigo-100 p-3 rounded-lg mr-4">
+                            <i class="fas fa-plus-circle text-indigo-600"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-medium text-gray-800">Añadir traducción</h3>
+                            <p class="text-sm text-gray-600">Crear una nueva traducción</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Estadísticas recientes -->
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Actividad reciente</h2>
+                <div class="bg-white rounded-lg border border-gray-200">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Palabra</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Traductor</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" id="recent-activity">
+                                <tr>
+                                    <td class="px-6 py-4 text-sm text-gray-500" colspan="4">Cargando actividad reciente...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Simulación de datos para el dashboard
+        // En una implementación real, estos datos deberían venir de una API
+
+        // Actualizar contadores
+        document.getElementById('total-translations').textContent = '25';
+        document.getElementById('approved-translations').textContent = '20';
+        document.getElementById('pending-translations').textContent = '5';
+
+        // Cargar actividad reciente
+        const recentActivity = document.getElementById('recent-activity');
+        recentActivity.innerHTML = `
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900">casa</div>
+                    <div class="text-sm text-indigo-600">wasi</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    Juan Pérez
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    Hoy, 10:45 AM
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                        Aprobado
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900">hombre</div>
+                    <div class="text-sm text-indigo-600">qhari</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    María López
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    Hoy, 9:15 AM
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                        Pendiente
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900">mujer</div>
+                    <div class="text-sm text-indigo-600">warmi</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    José García
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    Ayer, 3:30 PM
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                        Aprobado
+                    </span>
+                </td>
+            </tr>
+        `;
+    });
+</script>
+{% endblock %}

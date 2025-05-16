@@ -1,0 +1,410 @@
+{% extends "base.html" %}
+
+{% block title %}Gestionar Usuarios - Traductor Quechua Chanka{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="p-6 sm:p-10">
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center">
+                    <i class="fas fa-users text-3xl text-indigo-600 mr-4"></i>
+                    <h1 class="text-3xl font-bold text-gray-800">Gestionar Usuarios</h1>
+                </div>
+                <a href="{{ url_for('admin_dashboard') }}" class="text-indigo-600 hover:text-indigo-800 font-medium flex items-center">
+                    <i class="fas fa-arrow-left mr-2"></i> Volver al panel
+                </a>
+            </div>
+            
+            <!-- Filtros y búsqueda -->
+            <div class="mb-8">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-grow">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                            <input type="text" id="search-input" 
+                                class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                placeholder="Buscar usuario...">
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <select id="role-filter" class="rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="all">Todos los roles</option>
+                            <option value="admin">Administradores</option>
+                            <option value="translator">Traductores</option>
+                            <option value="user">Usuarios</option>
+                        </select>
+                        <button id="refresh-btn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tabla de usuarios -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="users-table">
+                        <tr>
+                            <td class="px-6 py-4 text-sm text-gray-500" colspan="7">Cargando usuarios...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Paginación -->
+            <div class="flex justify-between items-center mt-6">
+                <div class="text-sm text-gray-500" id="pagination-info">
+                    Mostrando <span id="showing-start">1</span> a <span id="showing-end">10</span> de <span id="total-items">15</span> usuarios
+                </div>
+                <div class="flex space-x-2">
+                    <button id="prev-page" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                        Anterior
+                    </button>
+                    <button id="next-page" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                        Siguiente
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de cambio de rol -->
+<div id="role-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg max-w-lg w-full p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-gray-800">Cambiar rol de usuario</h3>
+            <button class="text-gray-500 hover:text-gray-700 focus:outline-none modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="mb-6">
+            <p class="text-gray-600">Selecciona el nuevo rol para el usuario <span id="modal-username" class="font-semibold">usuario123</span>:</p>
+            <div class="mt-4">
+                <div class="grid grid-cols-1 gap-4">
+                    <div class="flex items-center">
+                        <input type="radio" id="role-user" name="role" value="user" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500" checked>
+                        <label for="role-user" class="ml-2 block text-sm text-gray-900">
+                            Usuario regular
+                        </label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="radio" id="role-translator" name="role" value="translator" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                        <label for="role-translator" class="ml-2 block text-sm text-gray-900">
+                            Traductor certificado
+                        </label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="radio" id="role-admin" name="role" value="admin" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                        <label for="role-admin" class="ml-2 block text-sm text-gray-900">
+                            Administrador
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="flex justify-end space-x-3">
+            <button class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 modal-close">
+                Cancelar
+            </button>
+            <button id="confirm-role-change" class="px-4 py-2 bg-indigo-600 rounded-md text-sm font-medium text-white hover:bg-indigo-700">
+                Guardar cambios
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de verificación de usuario -->
+<div id="verify-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg max-w-lg w-full p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-gray-800">Verificar usuario</h3>
+            <button class="text-gray-500 hover:text-gray-700 focus:outline-none modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="mb-6">
+            <p class="text-gray-600">¿Estás seguro de que deseas verificar la cuenta del usuario <span id="verify-modal-username" class="font-semibold">usuario123</span>?</p>
+            <div class="mt-4 bg-blue-50 p-4 rounded-lg border border-blue-100">
+                <p class="text-sm text-gray-600">
+                    <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                    Al verificar la cuenta, el usuario podrá iniciar sesión y utilizar la plataforma.
+                </p>
+            </div>
+        </div>
+        <div class="flex justify-end space-x-3">
+            <button class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 modal-close">
+                Cancelar
+            </button>
+            <button id="confirm-verify" class="px-4 py-2 bg-green-600 rounded-md text-sm font-medium text-white hover:bg-green-700">
+                Verificar cuenta
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de activación/desactivación -->
+<div id="status-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg max-w-lg w-full p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-gray-800" id="status-modal-title">Desactivar cuenta</h3>
+            <button class="text-gray-500 hover:text-gray-700 focus:outline-none modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="mb-6">
+            <p class="text-gray-600" id="status-modal-text">¿Estás seguro de que deseas desactivar la cuenta del usuario <span id="status-modal-username" class="font-semibold">usuario123</span>?</p>
+            <div class="mt-4 bg-yellow-50 p-4 rounded-lg border border-yellow-100" id="status-modal-warning">
+                <p class="text-sm text-gray-600">
+                    <i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>
+                    Al desactivar la cuenta, el usuario no podrá iniciar sesión ni utilizar la plataforma hasta que la cuenta sea reactivada.
+                </p>
+            </div>
+        </div>
+        <div class="flex justify-end space-x-3">
+            <button class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 modal-close">
+                Cancelar
+            </button>
+            <button id="confirm-status-change" class="px-4 py-2 bg-yellow-600 rounded-md text-sm font-medium text-white hover:bg-yellow-700">
+                Desactivar cuenta
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Simulación de datos para la tabla
+        // En una implementación real, estos datos vendrían de una API
+        const mockUsers = [
+            { id: 1, username: 'admin', email: 'admin@quechuachanka.org', fullName: 'Administrador', role: 'admin', status: 'active', verified: true },
+            { id: 2, username: 'juanperez', email: 'juan@example.com', fullName: 'Juan Pérez', role: 'translator', status: 'active', verified: true },
+            { id: 3, username: 'marialopez', email: 'maria@example.com', fullName: 'María López', role: 'translator', status: 'active', verified: true },
+            { id: 4, username: 'carlosrodriguez', email: 'carlos@example.com', fullName: 'Carlos Rodríguez', role: 'user', status: 'active', verified: true },
+            { id: 5, username: 'anamartinez', email: 'ana@example.com', fullName: 'Ana Martínez', role: 'user', status: 'inactive', verified: true },
+            { id: 6, username: 'pedrogomez', email: 'pedro@example.com', fullName: 'Pedro Gómez', role: 'user', status: 'active', verified: false }
+        ];
+        
+        // Cargar tabla
+        loadUsersTable(mockUsers);
+        
+        // Configurar modales
+        setupModals();
+        
+        // Función para cargar la tabla de usuarios
+        function loadUsersTable(users) {
+            const tableBody = document.getElementById('users-table');
+            tableBody.innerHTML = '';
+            
+            if (users.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td class="px-6 py-4 text-sm text-gray-500" colspan="7">
+                            No se encontraron usuarios
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            users.forEach(user => {
+                // Role badge
+                let roleBadge = '';
+                if (user.role === 'admin') {
+                    roleBadge = '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">Administrador</span>';
+                } else if (user.role === 'translator') {
+                    roleBadge = '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Traductor</span>';
+                } else {
+                    roleBadge = '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">Usuario</span>';
+                }
+                
+                // Status badge
+                let statusBadge = '';
+                if (!user.verified) {
+                    statusBadge = '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">No verificado</span>';
+                } else if (user.status === 'active') {
+                    statusBadge = '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Activo</span>';
+                } else {
+                    statusBadge = '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Inactivo</span>';
+                }
+                
+                // Actions
+                let actions = `
+                    <button class="text-blue-600 hover:text-blue-800 mr-3 change-role-btn" data-id="${user.id}" data-username="${user.username}" data-role="${user.role}">
+                        <i class="fas fa-user-tag"></i>
+                    </button>
+                `;
+                
+                // Status toggle
+                if (user.verified) {
+                    const statusAction = user.status === 'active' 
+                        ? `<button class="text-yellow-600 hover:text-yellow-800 mr-3 status-btn" data-id="${user.id}" data-username="${user.username}" data-action="deactivate">
+                               <i class="fas fa-user-slash"></i>
+                           </button>`
+                        : `<button class="text-green-600 hover:text-green-800 mr-3 status-btn" data-id="${user.id}" data-username="${user.username}" data-action="activate">
+                               <i class="fas fa-user-check"></i>
+                           </button>`;
+                    
+                    actions += statusAction;
+                } else {
+                    // Verify action for unverified users
+                    actions += `
+                        <button class="text-green-600 hover:text-green-800 mr-3 verify-btn" data-id="${user.id}" data-username="${user.username}">
+                            <i class="fas fa-user-check"></i>
+                        </button>
+                    `;
+                }
+                
+                tableBody.innerHTML += `
+                    <tr>
+                        <td class="px-6 py-4 text-sm text-gray-500">${user.id}</td>
+                        <td class="px-6 py-4 text-sm font-medium text-gray-900">${user.username}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500">${user.email}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500">${user.fullName}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            ${roleBadge}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            ${statusBadge}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            ${actions}
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            // Configurar botones de acción
+            document.querySelectorAll('.change-role-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const username = this.getAttribute('data-username');
+                    const role = this.getAttribute('data-role');
+                    
+                    document.getElementById('modal-username').textContent = username;
+                    
+                    // Seleccionar el rol actual
+                    document.querySelector(`input[name="role"][value="${role}"]`).checked = true;
+                    
+                    document.getElementById('confirm-role-change').setAttribute('data-id', id);
+                    document.getElementById('role-modal').classList.remove('hidden');
+                });
+            });
+            
+            document.querySelectorAll('.verify-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const username = this.getAttribute('data-username');
+                    
+                    document.getElementById('verify-modal-username').textContent = username;
+                    document.getElementById('confirm-verify').setAttribute('data-id', id);
+                    document.getElementById('verify-modal').classList.remove('hidden');
+                });
+            });
+            
+            document.querySelectorAll('.status-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const username = this.getAttribute('data-username');
+                    const action = this.getAttribute('data-action');
+                    
+                    const modalTitle = document.getElementById('status-modal-title');
+                    const modalText = document.getElementById('status-modal-text');
+                    const modalWarning = document.getElementById('status-modal-warning');
+                    const confirmBtn = document.getElementById('confirm-status-change');
+                    
+                    document.getElementById('status-modal-username').textContent = username;
+                    
+                    if (action === 'deactivate') {
+                        modalTitle.textContent = 'Desactivar cuenta';
+                        modalText.innerHTML = `¿Estás seguro de que deseas desactivar la cuenta del usuario <span class="font-semibold">${username}</span>?`;
+                        modalWarning.innerHTML = `
+                            <p class="text-sm text-gray-600">
+                                <i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>
+                                Al desactivar la cuenta, el usuario no podrá iniciar sesión ni utilizar la plataforma hasta que la cuenta sea reactivada.
+                            </p>
+                        `;
+                        confirmBtn.textContent = 'Desactivar cuenta';
+                        confirmBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                        confirmBtn.classList.add('bg-yellow-600', 'hover:bg-yellow-700');
+                    } else {
+                        modalTitle.textContent = 'Activar cuenta';
+                        modalText.innerHTML = `¿Estás seguro de que deseas activar la cuenta del usuario <span class="font-semibold">${username}</span>?`;
+                        modalWarning.innerHTML = `
+                            <p class="text-sm text-gray-600">
+                                <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                                Al activar la cuenta, el usuario podrá iniciar sesión y utilizar la plataforma nuevamente.
+                            </p>
+                        `;
+                        confirmBtn.textContent = 'Activar cuenta';
+                        confirmBtn.classList.remove('bg-yellow-600', 'hover:bg-yellow-700');
+                        confirmBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+                    }
+                    
+                    confirmBtn.setAttribute('data-id', id);
+                    confirmBtn.setAttribute('data-action', action);
+                    
+                    document.getElementById('status-modal').classList.remove('hidden');
+                });
+            });
+        }
+        
+        // Configurar modales
+        function setupModals() {
+            // Cerrar modales
+            document.querySelectorAll('.modal-close').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.getElementById('role-modal').classList.add('hidden');
+                    document.getElementById('verify-modal').classList.add('hidden');
+                    document.getElementById('status-modal').classList.add('hidden');
+                });
+            });
+            
+            // Botón de confirmar cambio de rol
+            document.getElementById('confirm-role-change').addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const role = document.querySelector('input[name="role"]:checked').value;
+                
+                // Aquí iría la lógica para cambiar el rol
+                alert(`Cambio de rol para usuario ${id}: ${role}`);
+                document.getElementById('role-modal').classList.add('hidden');
+            });
+            
+            // Botón de confirmar verificación
+            document.getElementById('confirm-verify').addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                
+                // Aquí iría la lógica para verificar al usuario
+                alert(`Usuario verificado: ${id}`);
+                document.getElementById('verify-modal').classList.add('hidden');
+            });
+            
+            // Botón de confirmar cambio de estado
+            document.getElementById('confirm-status-change').addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const action = this.getAttribute('data-action');
+                
+                // Aquí iría la lógica para cambiar el estado
+                alert(`Usuario ${id}: ${action}`);
+                document.getElementById('status-modal').classList.add('hidden');
+            });
+        }
+    });
+</script>
+{% endblock %}

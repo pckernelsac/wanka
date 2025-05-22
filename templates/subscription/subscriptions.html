@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}Gestionar Suscripción - Traductor Quechua Chanka{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="p-6 sm:p-10">
+            <div class="flex items-center mb-6">
+                <i class="fas fa-id-card text-3xl text-indigo-600 mr-4"></i>
+                <h1 class="text-3xl font-bold text-gray-800">Mi Suscripción</h1>
+            </div>
+            
+            <!-- Información de suscripción -->
+            <div class="bg-indigo-50 p-6 rounded-lg border border-indigo-100 mb-8">
+                <div class="flex items-start">
+                    <div class="bg-indigo-100 rounded-full w-12 h-12 flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-check-circle text-indigo-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h2 class="text-xl font-semibold text-gray-800">{{ subscription.plan_name }}</h2>
+                        <p class="text-indigo-700 font-medium">Suscripción activa</p>
+                        <div class="mt-2 text-sm text-gray-600">
+                            <p class="flex items-center mb-1">
+                                <i class="fas fa-calendar-alt mr-2 w-5 text-center"></i>
+                                Fecha de inicio: {{ subscription.start_date.strftime('%d/%m/%Y') }}
+                            </p>
+                            <p class="flex items-center mb-1">
+                                <i class="fas fa-calendar-check mr-2 w-5 text-center"></i>
+                                Fecha de vencimiento: {{ subscription.end_date.strftime('%d/%m/%Y') }}
+                            </p>
+                            <p class="flex items-center">
+                                <i class="fas fa-sync-alt mr-2 w-5 text-center"></i>
+                                Renovación: Automática
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Detalles del plan -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Detalles del plan</h3>
+                <ul class="space-y-3">
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span class="text-gray-700">Acceso ilimitado al traductor</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span class="text-gray-700">Pronunciaciones auténticas</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span class="text-gray-700">Búsquedas ilimitadas</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span class="text-gray-700">Soporte por email</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Opciones de gestión -->
+            <div class="border-t border-gray-200 pt-6">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Opciones de gestión</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <button id="cancel-subscription-btn" class="border border-red-300 text-red-600 hover:bg-red-50 font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center">
+                        <i class="fas fa-times-circle mr-2"></i> Cancelar suscripción
+                    </button>
+                    
+                    <a href="mailto:soporte@quechuachanka.org" class="border border-indigo-300 text-indigo-600 hover:bg-indigo-50 font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center">
+                        <i class="fas fa-envelope mr-2"></i> Contactar soporte
+                    </a>
+                </div>
+                
+                <div class="text-center mt-6">
+                    <a href="{{ url_for('user_view') }}" class="text-indigo-600 hover:text-indigo-800 font-medium">
+                        <i class="fas fa-arrow-left mr-1"></i> Volver al traductor
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de cancelación -->
+<div id="cancel-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg max-w-md w-full p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-gray-800">Confirmar cancelación</h3>
+            <button class="text-gray-500 hover:text-gray-700 focus:outline-none modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="mb-6">
+            <p class="text-gray-600">¿Estás seguro de que deseas cancelar tu suscripción?</p>
+            <div class="mt-4 bg-yellow-50 p-4 rounded-lg border border-yellow-100">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle text-yellow-500"></i>
+                    </div>
+                    <div class="ml-3 text-sm">
+                        <h3 class="font-medium text-yellow-800">Importante:</h3>
+                        <p class="text-yellow-700 mt-1">
+                            Al cancelar tu suscripción, podrás seguir utilizando el servicio hasta
+                            el {{ subscription.end_date.strftime('%d/%m/%Y') }}. Después de esa fecha, 
+                            ya no tendrás acceso al traductor.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="flex justify-end space-x-3">
+            <button class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 modal-close">
+                Volver atrás
+            </button>
+            <button id="confirm-cancel" class="px-4 py-2 bg-red-600 rounded-md text-sm font-medium text-white hover:bg-red-700">
+                Cancelar suscripción
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const cancelBtn = document.getElementById('cancel-subscription-btn');
+        const cancelModal = document.getElementById('cancel-modal');
+        const closeBtns = document.querySelectorAll('.modal-close');
+        const confirmCancelBtn = document.getElementById('confirm-cancel');
+        
+        // Mostrar modal de cancelación
+        cancelBtn.addEventListener('click', function() {
+            cancelModal.classList.remove('hidden');
+        });
+        
+        // Cerrar modal
+        closeBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                cancelModal.classList.add('hidden');
+            });
+        });
+        
+        // Confirmar cancelación
+        confirmCancelBtn.addEventListener('click', function() {
+            // Deshabilitar botón mientras se procesa
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Procesando...';
+            
+            // Enviar solicitud al servidor
+            fetch('/api/subscription/cancel', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Redirigir a la página principal con mensaje
+                    window.location.href = "{{ url_for('index') }}";
+                } else {
+                    alert(data.error || 'Error al cancelar la suscripción. Inténtalo de nuevo más tarde.');
+                    
+                    // Restaurar botón
+                    this.disabled = false;
+                    this.innerHTML = 'Cancelar suscripción';
+                    
+                    // Cerrar modal
+                    cancelModal.classList.add('hidden');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error de conexión. Inténtalo de nuevo más tarde.');
+                
+                // Restaurar botón
+                this.disabled = false;
+                this.innerHTML = 'Cancelar suscripción';
+                
+                // Cerrar modal
+                cancelModal.classList.add('hidden');
+            });
+        });
+    });
+</script>
+{% endblock %}

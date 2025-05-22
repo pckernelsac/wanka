@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Planes de Suscripción - Traductor Quechua Wanka{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="p-6 sm:p-10">
+            <div class="flex items-center mb-6">
+                <i class="fas fa-hand-holding-usd text-3xl text-indigo-600 mr-4"></i>
+                <h1 class="text-3xl font-bold text-gray-800">Planes de Suscripción</h1>
+            </div>
+            
+            <div class="mb-8">
+                <p class="text-gray-600">
+                    Suscríbete al Traductor Quechua Wanka para acceder a nuestra extensa colección de palabras
+                    en quechua con pronunciación auténtica. Tu suscripción ayuda a preservar y difundir este
+                    importante patrimonio cultural inmaterial.
+                </p>
+                
+                {% if has_subscription %}
+                <div class="mt-4 bg-green-50 p-4 rounded-lg border border-green-200">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-check-circle text-green-500"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-green-800">Ya tienes una suscripción activa</h3>
+                            <div class="mt-2 text-sm text-green-700">
+                                <p>Tu suscripción al plan {{ subscription.plan_name }} está activa hasta el {{ subscription.end_date.strftime('%d/%m/%Y') }}.</p>
+                                <a href="{{ url_for('manage_subscription') }}" class="font-medium underline hover:text-green-600 transition-colors">
+                                    Gestionar mi suscripción
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Planes de suscripción -->
+            <div class="grid md:grid-cols-1 gap-8">
+                {% for plan in plans %}
+                <div class="border border-indigo-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <div class="bg-indigo-50 p-6">
+                        <h3 class="text-2xl font-bold text-indigo-800">{{ plan.name }}</h3>
+                        <div class="mt-2 flex items-baseline">
+                            <span class="text-4xl font-extrabold text-indigo-600">S/ {{ "%.2f"|format(plan.price) }}</span>
+                            <span class="ml-1 text-xl text-indigo-500">/año</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-gray-600 mb-6">{{ plan.description }}</p>
+                        <ul class="space-y-3 mb-6">
+                            <li class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                <span class="text-gray-700">Acceso ilimitado al traductor</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                <span class="text-gray-700">Pronunciaciones auténticas</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                <span class="text-gray-700">Búsquedas ilimitadas</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                <span class="text-gray-700">Soporte por email</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                <span class="text-gray-700">Pago con Yape disponible</span>
+                            </li>
+                        </ul>
+                        
+                        <!-- Botones condicionales según el estado del usuario -->
+                        {% if has_subscription %}
+                            <button disabled class="w-full bg-gray-300 text-white font-medium py-3 rounded-lg cursor-not-allowed">
+                                Ya tienes una suscripción activa
+                            </button>
+                        {% else %}
+                            <!-- Verificar si el usuario está logueado -->
+                            {% if session.get('user_id') %}
+                                <a href="{{ url_for('subscription_checkout', plan_id=plan.id) }}" class="block w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 rounded-lg transition-colors">
+                                    <i class="fas fa-mobile-alt mr-2"></i> Suscribirme con Yape
+                                </a>
+                            {% else %}
+                                <!-- Si no está logueado, redirigir al login -->
+                                <a href="{{ url_for('login', next=url_for('subscription_checkout', plan_id=plan.id)) }}" class="block w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 rounded-lg transition-colors">
+                                    <i class="fas fa-sign-in-alt mr-2"></i> Iniciar sesión y suscribirme
+                                </a>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Sección para usuarios no registrados -->
+            {% if not session.get('user_id') %}
+            <div class="mt-12 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-8 border border-indigo-100">
+                <div class="text-center">
+                    <div class="text-4xl mb-4">👋</div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">¿Nuevo en nuestro traductor?</h3>
+                    <p class="text-gray-600 mb-6 max-w-2xl mx-auto">
+                        Para acceder a todas las funciones del traductor necesitas crear una cuenta y suscribirte. 
+                        Es rápido, seguro y te dará acceso completo a nuestro diccionario de quechua Wanka.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <a href="{{ url_for('register') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-8 rounded-lg transition-colors">
+                            <i class="fas fa-user-plus mr-2"></i> Crear cuenta gratis
+                        </a>
+                        <a href="{{ url_for('login') }}" class="bg-white hover:bg-gray-50 text-indigo-600 border border-indigo-200 font-medium py-3 px-8 rounded-lg transition-colors">
+                            <i class="fas fa-sign-in-alt mr-2"></i> Ya tengo cuenta
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- FAQ -->
+            <div class="mt-12">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Preguntas frecuentes</h2>
+                
+                <div class="space-y-6">
+                    <div class="border-b border-gray-200 pb-4">
+                        <h3 class="text-lg font-medium text-gray-800 mb-2">¿Qué incluye mi suscripción?</h3>
+                        <p class="text-gray-600">
+                            Tu suscripción te da acceso completo a todas las palabras y pronunciaciones en quechua Wanka 
+                            disponibles en nuestra plataforma. Podrás buscar términos, escuchar su pronunciación auténtica 
+                            y acceder a todas las funciones del traductor.
+                        </p>
+                    </div>
+                    
+                    <div class="border-b border-gray-200 pb-4">
+                        <h3 class="text-lg font-medium text-gray-800 mb-2">¿Cómo puedo pagar con Yape?</h3>
+                        <p class="text-gray-600">
+                            El proceso es muy sencillo: después de seleccionar tu plan, te mostraremos las instrucciones 
+                            para realizar el pago por Yape al número 968 680 379. Solo necesitas subir tu voucher y 
+                            nosotros validaremos tu pago para activar tu suscripción.
+                        </p>
+                    </div>
+                    
+                    <div class="border-b border-gray-200 pb-4">
+                        <h3 class="text-lg font-medium text-gray-800 mb-2">¿Cómo puedo cancelar mi suscripción?</h3>
+                        <p class="text-gray-600">
+                            Puedes cancelar tu suscripción en cualquier momento desde tu cuenta en la sección "Gestionar 
+                            suscripción". La cancelación será efectiva al finalizar tu período de facturación actual, 
+                            por lo que podrás seguir utilizando el servicio hasta esa fecha.
+                        </p>
+                    </div>
+                    
+                    <div class="border-b border-gray-200 pb-4">
+                        <h3 class="text-lg font-medium text-gray-800 mb-2">¿Ofrecen reembolsos?</h3>
+                        <p class="text-gray-600">
+                            Si no estás satisfecho con tu suscripción, puedes solicitar un reembolso dentro de los 
+                            primeros 14 días desde la fecha de compra. Para solicitar un reembolso, por favor 
+                            contacta a nuestro equipo de soporte.
+                        </p>
+                    </div>
+                    
+                    <div class="pb-4">
+                        <h3 class="text-lg font-medium text-gray-800 mb-2">¿Con qué frecuencia se actualiza el contenido?</h3>
+                        <p class="text-gray-600">
+                            Nuestro equipo trabaja constantemente en la ampliación del vocabulario disponible. 
+                            Regularmente añadimos nuevas palabras, frases y pronunciaciones para enriquecer nuestra 
+                            base de datos y ofrecerte la mejor experiencia posible.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

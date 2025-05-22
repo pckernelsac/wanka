@@ -1,0 +1,398 @@
+{% extends "base.html" %}
+
+{% block title %}Validar Vouchers - Traductor Quechua Chanka{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="p-6 sm:p-10">
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center">
+                    <i class="fas fa-receipt text-3xl text-purple-600 mr-4"></i>
+                    <h1 class="text-3xl font-bold text-gray-800">Validar Vouchers de Pago</h1>
+                </div>
+                <a href="{{ url_for('admin_dashboard') }}" class="text-indigo-600 hover:text-indigo-800 font-medium flex items-center">
+                    <i class="fas fa-arrow-left mr-2"></i> Volver al panel
+                </a>
+            </div>
+            
+            <!-- Estadísticas rápidas -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-yellow-50 p-6 rounded-lg border border-yellow-100">
+                    <div class="flex items-center">
+                        <i class="fas fa-clock text-yellow-500 text-2xl mr-3"></i>
+                        <div>
+                            <p class="text-sm text-yellow-600">Pendientes</p>
+                            <p class="text-2xl font-bold text-yellow-800">{{ vouchers|length }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-green-50 p-6 rounded-lg border border-green-100">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 text-2xl mr-3"></i>
+                        <div>
+                            <p class="text-sm text-green-600">Validar</p>
+                            <p class="text-2xl font-bold text-green-800" id="pending-count">0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-purple-50 p-6 rounded-lg border border-purple-100">
+                    <div class="flex items-center">
+                        <i class="fas fa-money-bill-wave text-purple-500 text-2xl mr-3"></i>
+                        <div>
+                            <p class="text-sm text-purple-600">Total a validar</p>
+                            <p class="text-2xl font-bold text-purple-800">S/ <span id="total-amount">0.00</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Lista de vouchers -->
+            {% if vouchers %}
+                <div class="space-y-6" id="vouchers-container">
+                    {% for voucher in vouchers %}
+                    <div class="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden voucher-card" data-amount="{{ voucher.price }}">
+                        <div class="p-6">
+                            <div class="flex flex-col lg:flex-row gap-6">
+                                <!-- Información del usuario y suscripción -->
+                                <div class="flex-1">
+                                    <div class="flex items-start justify-between mb-4">
+                                        <div>
+                                            <h3 class="text-xl font-semibold text-gray-800">{{ voucher.full_name or voucher.username }}</h3>
+                                            <p class="text-gray-600">{{ voucher.email }}</p>
+                                            <p class="text-sm text-gray-500">Usuario: {{ voucher.username }}</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">
+                                                Pendiente validación
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                        <div class="bg-white p-4 rounded-lg border">
+                                            <h4 class="font-medium text-gray-800 mb-2">Plan suscripción</h4>
+                                            <p class="text-lg font-semibold text-purple-600">{{ voucher.plan_name }}</p>
+                                            <p class="text-2xl font-bold text-gray-800">S/ {{ "%.2f"|format(voucher.price) }}</p>
+                                        </div>
+                                        
+                                        <!-- Corregir la parte de fecha en vouchers.html -->
+
+<div class="bg-white p-4 rounded-lg border">
+    <h4 class="font-medium text-gray-800 mb-2">Información del pago</h4>
+    <p class="text-sm text-gray-600">Fecha envío:</p>
+    <!-- CAMBIO: usar start_date en lugar de start_date.strftime -->
+    <p class="font-medium">{{ voucher.start_date.strftime('%d/%m/%Y %H:%M') if voucher.start_date else 'No disponible' }}</p>
+    <p class="text-sm text-gray-600 mt-1">ID Suscripción: #{{ voucher.id }}</p>
+</div>
+
+<!-- O si prefieres usar created_at cuando esté disponible: -->
+<!-- <p class="font-medium">{{ (voucher.created_at or voucher.start_date).strftime('%d/%m/%Y %H:%M') }}</p> -->
+                                    </div>
+                                    
+                                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-4">
+                                        <h4 class="font-medium text-blue-800 mb-2">
+                                            <i class="fas fa-info-circle mr-1"></i> Verificar pago Yape
+                                        </h4>
+                                        <div class="text-sm text-blue-700 space-y-1">
+                                            <p>• <strong>Número destino:</strong> 968 680 379</p>
+                                            <p>• <strong>Monto exacto:</strong> S/ {{ "%.2f"|format(voucher.price) }}</p>
+                                            <p>• <strong>Verificar:</strong> Fecha, hora y número en el voucher</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Botones de acción -->
+                                    <div class="flex flex-col sm:flex-row gap-3">
+                                        <button class="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-colors validate-btn" 
+                                                data-id="{{ voucher.id }}" 
+                                                data-username="{{ voucher.username }}"
+                                                data-plan="{{ voucher.plan_name }}"
+                                                data-amount="{{ voucher.price }}"
+                                                data-action="approve">
+                                            <i class="fas fa-check-circle mr-2"></i> Aprobar y activar suscripción
+                                        </button>
+                                        <button class="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-6 rounded-lg transition-colors validate-btn" 
+                                                data-id="{{ voucher.id }}" 
+                                                data-username="{{ voucher.username }}"
+                                                data-plan="{{ voucher.plan_name }}"
+                                                data-amount="{{ voucher.price }}"
+                                                data-action="reject">
+                                            <i class="fas fa-times-circle mr-2"></i> Rechazar pago
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Vista previa del voucher -->
+                                <div class="lg:w-80">
+                                    <div class="bg-white p-4 rounded-lg border">
+                                        <h4 class="font-medium text-gray-800 mb-3 text-center">
+                                            <i class="fas fa-receipt mr-1"></i> Voucher enviado
+                                        </h4>
+                                        
+                                        {% if voucher.voucher_path %}
+                                            {% set file_extension = voucher.voucher_path.split('.')[-1].lower() %}
+                                            {% if file_extension in ['jpg', 'jpeg', 'png', 'gif'] %}
+                                                <div class="text-center">
+                                                    <img src="{{ url_for('get_voucher', filename=voucher.voucher_path) }}" 
+                                                         alt="Voucher" 
+                                                         class="max-w-full h-auto rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
+                                                         onclick="openImageModal(this.src)">
+                                                    <p class="text-xs text-gray-500 mt-2">Haz clic para ampliar</p>
+                                                </div>
+                                            {% elif file_extension == 'pdf' %}
+                                                <div class="text-center">
+                                                    <div class="bg-red-100 p-6 rounded-lg">
+                                                        <i class="fas fa-file-pdf text-red-500 text-4xl mb-2"></i>
+                                                        <p class="text-sm text-gray-600">Archivo PDF</p>
+                                                    </div>
+                                                    <a href="{{ url_for('get_voucher', filename=voucher.voucher_path) }}" 
+                                                       target="_blank" 
+                                                       class="inline-block mt-2 bg-red-600 hover:bg-red-700 text-white text-sm py-2 px-4 rounded transition-colors">
+                                                        <i class="fas fa-external-link-alt mr-1"></i> Ver PDF
+                                                    </a>
+                                                </div>
+                                            {% endif %}
+                                        {% else %}
+                                            <div class="text-center text-gray-500">
+                                                <i class="fas fa-file-alt text-4xl mb-2"></i>
+                                                <p class="text-sm">No hay voucher disponible</p>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-12">
+                    <div class="text-6xl mb-4">✅</div>
+                    <h3 class="text-xl font-medium text-gray-800 mb-2">No hay vouchers pendientes</h3>
+                    <p class="text-gray-600">Todos los pagos han sido validados</p>
+                    <a href="{{ url_for('admin_dashboard') }}" class="inline-block mt-4 bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg transition-colors">
+                        Volver al panel
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación -->
+<div id="validation-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg max-w-lg w-full p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-gray-800" id="modal-title">Confirmar acción</h3>
+            <button class="text-gray-500 hover:text-gray-700 focus:outline-none modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="mb-6">
+            <p class="text-gray-600" id="modal-message">¿Estás seguro de realizar esta acción?</p>
+            <div class="mt-4 p-4 rounded-lg border" id="modal-details">
+                <!-- Contenido dinámico -->
+            </div>
+        </div>
+        <div class="flex justify-end space-x-3">
+            <button class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 modal-close">
+                Cancelar
+            </button>
+            <button id="confirm-validation" class="px-4 py-2 rounded-md text-sm font-medium text-white">
+                Confirmar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para ampliar imagen -->
+<div id="image-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden flex items-center justify-center z-50">
+    <div class="relative max-w-4xl max-h-full p-4">
+        <button class="absolute top-2 right-2 text-white hover:text-gray-300 focus:outline-none z-10" onclick="closeImageModal()">
+            <i class="fas fa-times text-2xl"></i>
+        </button>
+        <img id="modal-image" src="" alt="Voucher ampliado" class="max-w-full max-h-full rounded-lg">
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        updateStatistics();
+        setupValidationButtons();
+        setupModals();
+    });
+    
+    function updateStatistics() {
+        const vouchers = document.querySelectorAll('.voucher-card');
+        const totalAmount = Array.from(vouchers).reduce((sum, card) => {
+            return sum + parseFloat(card.dataset.amount || 0);
+        }, 0);
+        
+        document.getElementById('pending-count').textContent = vouchers.length;
+        document.getElementById('total-amount').textContent = totalAmount.toFixed(2);
+    }
+    
+    function setupValidationButtons() {
+        document.querySelectorAll('.validate-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.dataset.id;
+                const username = this.dataset.username;
+                const plan = this.dataset.plan;
+                const amount = this.dataset.amount;
+                const action = this.dataset.action;
+                
+                const modal = document.getElementById('validation-modal');
+                const modalTitle = document.getElementById('modal-title');
+                const modalMessage = document.getElementById('modal-message');
+                const modalDetails = document.getElementById('modal-details');
+                const confirmBtn = document.getElementById('confirm-validation');
+                
+                if (action === 'approve') {
+                    modalTitle.textContent = 'Aprobar pago';
+                    modalMessage.textContent = `¿Confirmar que el pago de ${username} es válido?`;
+                    modalDetails.innerHTML = `
+                        <div class="bg-green-50 border border-green-200">
+                            <div class="p-3">
+                                <h4 class="font-medium text-green-800 mb-2">Se activará la suscripción:</h4>
+                                <p class="text-sm text-green-700">• Usuario: ${username}</p>
+                                <p class="text-sm text-green-700">• Plan: ${plan}</p>
+                                <p class="text-sm text-green-700">• Monto: S/ ${amount}</p>
+                                <p class="text-sm text-green-700">• El usuario tendrá acceso inmediato al traductor</p>
+                            </div>
+                        </div>
+                    `;
+                    confirmBtn.className = 'px-4 py-2 bg-green-600 hover:bg-green-700 rounded-md text-sm font-medium text-white';
+                    confirmBtn.innerHTML = '<i class="fas fa-check mr-1"></i> Aprobar pago';
+                } else {
+                    modalTitle.textContent = 'Rechazar pago';
+                    modalMessage.textContent = `¿Confirmar que el pago de ${username} NO es válido?`;
+                    modalDetails.innerHTML = `
+                        <div class="bg-red-50 border border-red-200">
+                            <div class="p-3">
+                                <h4 class="font-medium text-red-800 mb-2">Se rechazará el pago:</h4>
+                                <p class="text-sm text-red-700">• Usuario: ${username}</p>
+                                <p class="text-sm text-red-700">• Plan: ${plan}</p>
+                                <p class="text-sm text-red-700">• Monto: S/ ${amount}</p>
+                                <p class="text-sm text-red-700">• El usuario deberá realizar el pago nuevamente</p>
+                            </div>
+                        </div>
+                    `;
+                    confirmBtn.className = 'px-4 py-2 bg-red-600 hover:bg-red-700 rounded-md text-sm font-medium text-white';
+                    confirmBtn.innerHTML = '<i class="fas fa-times mr-1"></i> Rechazar pago';
+                }
+                
+                confirmBtn.onclick = () => processValidation(id, action);
+                modal.classList.remove('hidden');
+            });
+        });
+    }
+    
+    function setupModals() {
+        document.querySelectorAll('.modal-close').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.getElementById('validation-modal').classList.add('hidden');
+            });
+        });
+        
+        // Cerrar modal al hacer clic fuera
+        document.getElementById('validation-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+            }
+        });
+        
+        document.getElementById('image-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeImageModal();
+            }
+        });
+    }
+    
+    function processValidation(subscriptionId, action) {
+        const confirmBtn = document.getElementById('confirm-validation');
+        const originalContent = confirmBtn.innerHTML;
+        
+        // Deshabilitar botón
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-1"></i> Procesando...';
+        
+        fetch('/api/admin/voucher/validate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                subscription_id: subscriptionId,
+                action: action
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Remover la tarjeta del voucher
+                const voucherCard = document.querySelector(`[data-id="${subscriptionId}"]`).closest('.voucher-card');
+                voucherCard.remove();
+                
+                // Actualizar estadísticas
+                updateStatistics();
+                
+                // Mostrar mensaje de éxito
+                showNotification(data.message, 'success');
+                
+                // Cerrar modal
+                document.getElementById('validation-modal').classList.add('hidden');
+                
+                // Si no quedan vouchers, mostrar mensaje
+                if (document.querySelectorAll('.voucher-card').length === 0) {
+                    document.getElementById('vouchers-container').innerHTML = `
+                        <div class="text-center py-12">
+                            <div class="text-6xl mb-4">✅</div>
+                            <h3 class="text-xl font-medium text-gray-800 mb-2">¡Todos los vouchers han sido procesados!</h3>
+                            <p class="text-gray-600">No hay más pagos pendientes de validación</p>
+                        </div>
+                    `;
+                }
+            } else {
+                showNotification(data.error || 'Error al procesar el voucher', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error de conexión. Inténtalo de nuevo.', 'error');
+        })
+        .finally(() => {
+            // Restaurar botón
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = originalContent;
+        });
+    }
+    
+    function openImageModal(src) {
+        document.getElementById('modal-image').src = src;
+        document.getElementById('image-modal').classList.remove('hidden');
+    }
+    
+    function closeImageModal() {
+        document.getElementById('image-modal').classList.add('hidden');
+    }
+    
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`;
+        notification.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas fa-${type === 'success' ? 'check' : 'exclamation'}-circle mr-2"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 5000);
+    }
+</script>
+{% endblock %}

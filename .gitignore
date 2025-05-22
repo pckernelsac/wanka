@@ -1,44 +1,38 @@
-# Entorno virtual
+# Archivos de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.env
 venv/
 env/
 ENV/
 
-# Archivos de Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-*.egg-info/
-*.egg
-
-# Archivos de base de datos
+# Base de datos SQLite
 *.db
 *.sqlite
 *.sqlite3
 
-# Archivos de audio subidos
-static/audio/*
-!static/audio/.gitkeep
+# Archivos de audio (opcional - si son muy pesados)
+# static/audio/*.wav
+# static/audio/*.mp3
+# static/audio/*.webm
 
-# Logs
+# Vouchers (contienen información sensible)
+static/vouchers/*
+!static/vouchers/.gitkeep
+
+# Archivos de configuración local
+config_local.py
+.vscode/
+.idea/
 *.log
-instance/
 
-# Archivos de entorno
-.env
-.env.local
-
-# Archivos del sistema
+# Archivos de sistema
 .DS_Store
 Thumbs.db
 
-# Archivos de Azure
-.azure/
-*.publishsettings
-
-# Archivos de IDE
-.idea/
-.vscode/
-*.swp
-*.swo
+# Backups
+backups/

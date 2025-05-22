@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Inicio - Traductor Quechua Chanka{% endblock %}
+{% block title %}Inicio - Traductor Quechua Wanka{% endblock %}
 
 {% block content %}
 <div class="max-w-5xl mx-auto">
@@ -9,18 +9,18 @@
         <div class="flex flex-col md:flex-row">
             <div class="md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
                 <h1 class="text-4xl font-bold text-gray-800 mb-4">
-                    Bienvenido al Traductor de Quechua Chanka 
+                    Preservando el Quechua Wanka con Tecnología
                     <span class="inline-block animate-bounce ml-2">👋</span>
                 </h1>
                 <p class="text-lg text-gray-600 mb-6">
-                    Preservando nuestro idioma ancestral con tecnología moderna y voz auténtica
+                    Accede a traducciones precisas y escucha pronunciaciones auténticas de hablantes nativos certificados por el Ministerio de Cultura.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4">
-                    <a href="{{ url_for('translator_view') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center">
-                        <i class="fas fa-microphone-alt mr-2"></i> Añadir traducciones
+                    <a href="{{ url_for('subscription_plans') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center">
+                        <i class="fas fa-hand-holding-usd mr-2"></i> Ver planes de suscripción
                     </a>
-                    <a href="{{ url_for('user_view') }}" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center">
-                        <i class="fas fa-headphones mr-2"></i> Consultar traducciones
+                    <a href="{{ url_for('login') }}" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center">
+                        <i class="fas fa-sign-in-alt mr-2"></i> Iniciar sesión
                     </a>
                 </div>
             </div>
@@ -42,8 +42,8 @@
                 <div class="text-center mb-4">
                     <span class="text-5xl">🎙️</span>
                 </div>
-                <h3 class="text-xl font-semibold text-center mb-3">Grabación de voz</h3>
-                <p class="text-gray-600">Los traductores pueden grabar su voz directamente desde el navegador, preservando la pronunciación auténtica.</p>
+                <h3 class="text-xl font-semibold text-center mb-3">Pronunciación auténtica</h3>
+                <p class="text-gray-600">Escucha cómo los hablantes nativos certificados por el Ministerio de Cultura pronuncian cada palabra en quechua Wanka.</p>
             </div>
             
             <div class="bg-white p-6 rounded-xl shadow-md">
@@ -51,54 +51,101 @@
                     <span class="text-5xl">🔍</span>
                 </div>
                 <h3 class="text-xl font-semibold text-center mb-3">Búsqueda rápida</h3>
-                <p class="text-gray-600">Busca palabras en español y escucha instantáneamente su pronunciación en quechua chanka.</p>
+                <p class="text-gray-600">Busca palabras en español y escucha instantáneamente su pronunciación en quechua Wanka gracias a nuestra base de datos optimizada.</p>
             </div>
             
             <div class="bg-white p-6 rounded-xl shadow-md">
                 <div class="text-center mb-4">
                     <span class="text-5xl">💾</span>
                 </div>
-                <h3 class="text-xl font-semibold text-center mb-3">Base de datos robusta</h3>
-                <p class="text-gray-600">Todas las traducciones y grabaciones se almacenan de forma segura en nuestra base de datos SQLite.</p>
+                <h3 class="text-xl font-semibold text-center mb-3">Contenido de calidad</h3>
+                <p class="text-gray-600">Todas las traducciones son verificadas por traductores certificados del Ministerio de Cultura para garantizar su precisión.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Subscription Plans Preview -->
+    <section class="bg-white rounded-xl shadow-lg p-8 mb-12">
+        <div class="flex flex-col items-center text-center mb-8">
+            <h2 class="text-3xl font-bold mb-4 text-gray-800">Planes de suscripción</h2>
+            <p class="text-gray-600 max-w-2xl">
+                Suscríbete para tener acceso completo a nuestro traductor de quechua Wanka con pronunciaciones auténticas. Tu suscripción ayuda a preservar este importante patrimonio cultural.
+            </p>
+        </div>
+        
+        <div class="max-w-lg mx-auto bg-indigo-50 p-6 rounded-xl border border-indigo-100">
+            <div class="text-center">
+                <h3 class="text-2xl font-bold text-indigo-800">Plan Anual</h3>
+                <div class="my-4">
+                    <span class="text-4xl font-extrabold text-indigo-600">S/ 80</span>
+                    <span class="text-xl text-indigo-500">/año</span>
+                </div>
+            </div>
+            
+            <ul class="space-y-3 my-6">
+                <li class="flex items-center">
+                    <i class="fas fa-check text-green-500 mr-3"></i>
+                    <span class="text-gray-700">Acceso ilimitado al traductor</span>
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-check text-green-500 mr-3"></i>
+                    <span class="text-gray-700">Pronunciaciones auténticas</span>
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-check text-green-500 mr-3"></i>
+                    <span class="text-gray-700">Búsquedas ilimitadas</span>
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-check text-green-500 mr-3"></i>
+                    <span class="text-gray-700">Soporte por email</span>
+                </li>
+            </ul>
+            
+            <div class="text-center">
+                <a href="{{ url_for('subscription_plans') }}" class="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-8 rounded-lg transition-colors">
+                    Ver detalles
+                </a>
             </div>
         </div>
     </section>
 
     <!-- About Quechua Section -->
     <section class="bg-white rounded-xl shadow-lg p-8 mb-12">
-        <h2 class="text-3xl font-bold mb-6 text-gray-800">Sobre el Quechua Chanka</h2>
-        
-        <div class="flex flex-col md:flex-row gap-8">
-            <div class="md:w-2/3">
-                <p class="text-gray-700 mb-4">
-                    El quechua chanka (también conocido como quechua ayacuchano) es una variante del quechua hablada principalmente en las regiones de Ayacucho, Apurímac y partes de Huancavelica en Perú.
-                </p>
-                <p class="text-gray-700 mb-4">
-                    Este dialecto se distingue por sus particularidades fonéticas y léxicas que lo diferencian de otras variantes del quechua. Es considerado uno de los dialectos quechuas más importantes y cuenta con una rica tradición oral.
-                </p>
-                <p class="text-gray-700">
-                    Nuestra plataforma busca preservar y difundir este valioso patrimonio lingüístico, facilitando el aprendizaje y la consulta de pronunciaciones auténticas grabadas por hablantes nativos.
-                </p>
-            </div>
-            <div class="md:w-1/3 flex items-center justify-center">
-                <div class="text-center">
-                    <span class="text-8xl inline-block">🌎</span>
-                    <p class="text-indigo-800 font-medium mt-4">Patrimonio cultural inmaterial</p>
-                </div>
+    <h2 class="text-3xl font-bold mb-6 text-gray-800">Sobre el Quechua Wanka</h2>
+    
+    <div class="flex flex-col md:flex-row gap-8">
+        <div class="md:w-2/3">
+            <p class="text-gray-700 mb-4">
+                El quechua Wanka es una variante del quechua hablada en el Valle del Mantaro, departamento de Junín. Pertenece a la familia Quechua I y se caracteriza por conservar rasgos lingüísticos únicos que la distinguen de otras variedades.
+            </p>
+            <p class="text-gray-700 mb-4">
+                Esta lengua ancestral del pueblo Wanka ha sido transmitida de generación en generación, manteniendo viva la identidad cultural de las comunidades de Huancayo, Jauja y Concepción.
+            </p>
+            <p class="text-gray-700">
+                Nuestra plataforma preserva este patrimonio lingüístico facilitando el acceso a pronunciaciones auténticas grabadas por hablantes nativos del Valle del Mantaro.
+            </p>
+        </div>
+        <div class="md:w-1/3 flex items-center justify-center">
+            <div class="text-center">
+                <span class="text-8xl inline-block">🏔️</span>
+                <p class="text-indigo-800 font-medium mt-4">Valle del Mantaro</p>
+                <p class="text-gray-600 text-sm mt-2">Junín, Perú</p>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Call To Action -->
+    <!-- Testimonials -->
+        <!-- Call To Action -->
     <section class="quechua-gradient rounded-xl shadow-lg p-8 text-white text-center">
         <h2 class="text-3xl font-bold mb-4">¡Comienza a usar nuestro traductor ahora!</h2>
-        <p class="text-xl mb-6">Explora nuestra colección de palabras o contribuye añadiendo nuevas traducciones</p>
+        <p class="text-xl mb-6">Suscríbete para acceder a nuestra colección de palabras con pronunciaciones auténticas</p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="{{ url_for('translator_view') }}" class="bg-white text-indigo-600 hover:bg-gray-100 font-medium py-3 px-6 rounded-lg transition-colors">
-                <i class="fas fa-plus-circle mr-2"></i> Añadir traducciones
+            <a href="{{ url_for('subscription_plans') }}" class="bg-white text-indigo-600 hover:bg-gray-100 font-medium py-3 px-6 rounded-lg transition-colors">
+                <i class="fas fa-hand-holding-usd mr-2"></i> Ver planes
             </a>
-            <a href="{{ url_for('user_view') }}" class="bg-white text-emerald-600 hover:bg-gray-100 font-medium py-3 px-6 rounded-lg transition-colors">
-                <i class="fas fa-search mr-2"></i> Buscar traducciones
+            <a href="{{ url_for('register') }}" class="bg-transparent text-white border border-white hover:bg-white/10 font-medium py-3 px-6 rounded-lg transition-colors">
+                <i class="fas fa-user-plus mr-2"></i> Crear cuenta
             </a>
         </div>
     </section>

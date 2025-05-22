@@ -16,6 +16,46 @@
                 </a>
             </div>
             
+            <!-- Estadísticas rápidas -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                    <div class="flex items-center">
+                        <i class="fas fa-language text-blue-500 text-2xl mr-3"></i>
+                        <div>
+                            <p class="text-sm text-blue-600">Total</p>
+                            <p class="text-xl font-bold text-blue-800" id="total-count">0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 text-2xl mr-3"></i>
+                        <div>
+                            <p class="text-sm text-green-600">Publicadas</p>
+                            <p class="text-xl font-bold text-green-800" id="published-count">0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
+                    <div class="flex items-center">
+                        <i class="fas fa-clock text-yellow-500 text-2xl mr-3"></i>
+                        <div>
+                            <p class="text-sm text-yellow-600">Con Audio</p>
+                            <p class="text-xl font-bold text-yellow-800" id="audio-count">0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-purple-50 p-4 rounded-lg border border-purple-100">
+                    <div class="flex items-center">
+                        <i class="fas fa-download text-purple-500 text-2xl mr-3"></i>
+                        <div>
+                            <p class="text-sm text-purple-600">Descargables</p>
+                            <p class="text-xl font-bold text-purple-800" id="downloadable-count">0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <!-- Filtros y búsqueda -->
             <div class="mb-8">
                 <div class="flex flex-col md:flex-row gap-4">
@@ -26,14 +66,19 @@
                             </div>
                             <input type="text" id="search-input" 
                                 class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                placeholder="Buscar palabra...">
+                                placeholder="Buscar por palabra en español o quechua...">
                         </div>
                     </div>
                     <div class="flex gap-4">
-                        <select id="status-filter" class="rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="all">Todos los estados</option>
-                            <option value="approved">Aprobados</option>
-                            <option value="pending">Pendientes</option>
+                        <select id="audio-filter" class="rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="all">Todo el audio</option>
+                            <option value="with-audio">Con audio</option>
+                            <option value="without-audio">Sin audio</option>
+                        </select>
+                        <select id="download-filter" class="rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="all">Todas las descargas</option>
+                            <option value="downloadable">Descargables</option>
+                            <option value="not-downloadable">No descargables</option>
                         </select>
                         <button id="refresh-btn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
                             <i class="fas fa-sync-alt"></i>
@@ -58,65 +103,31 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200" id="translations-table">
                         <tr>
-                            <td class="px-6 py-4 text-sm text-gray-500" colspan="7">Cargando traducciones...</td>
+                            <td class="px-6 py-4 text-sm text-gray-500" colspan="7">
+                                <div class="flex items-center justify-center">
+                                    <i class="fas fa-circle-notch fa-spin mr-2"></i>
+                                    Cargando traducciones...
+                                </div>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
             
             <!-- Paginación -->
-            <div class="flex justify-between items-center mt-6">
+            <div class="flex justify-between items-center mt-6" id="pagination-container">
                 <div class="text-sm text-gray-500" id="pagination-info">
-                    Mostrando <span id="showing-start">1</span> a <span id="showing-end">10</span> de <span id="total-items">25</span> traducciones
+                    Mostrando <span id="showing-start">0</span> a <span id="showing-end">0</span> de <span id="total-items">0</span> traducciones
                 </div>
                 <div class="flex space-x-2">
-                    <button id="prev-page" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    <button id="prev-page" disabled class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
                         Anterior
                     </button>
-                    <button id="next-page" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    <button id="next-page" disabled class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
                         Siguiente
                     </button>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal de aprobación -->
-<div id="approval-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg max-w-lg w-full p-6">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold text-gray-800">Confirmar aprobación</h3>
-            <button class="text-gray-500 hover:text-gray-700 focus:outline-none modal-close">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="mb-6">
-            <p class="text-gray-600">¿Estás seguro de que deseas aprobar la traducción?</p>
-            <div class="mt-4 bg-gray-50 p-4 rounded-lg">
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <p class="text-sm text-gray-500">Español:</p>
-                        <p class="font-medium" id="modal-spanish">casa</p>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-500">Quechua:</p>
-                        <p class="font-medium" id="modal-quechua">wasi</p>
-                    </div>
-                </div>
-                <div class="mt-2">
-                    <p class="text-sm text-gray-500">Traductor:</p>
-                    <p class="font-medium" id="modal-translator">Juan Pérez</p>
-                </div>
-            </div>
-        </div>
-        <div class="flex justify-end space-x-3">
-            <button class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 modal-close">
-                Cancelar
-            </button>
-            <button id="confirm-approve" class="px-4 py-2 bg-green-600 rounded-md text-sm font-medium text-white hover:bg-green-700">
-                Aprobar
-            </button>
         </div>
     </div>
 </div>
@@ -136,12 +147,16 @@
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <p class="text-sm text-gray-500">Español:</p>
-                        <p class="font-medium" id="delete-modal-spanish">casa</p>
+                        <p class="font-medium" id="delete-modal-spanish">-</p>
                     </div>
                     <div>
                         <p class="text-sm text-gray-500">Quechua:</p>
-                        <p class="font-medium" id="delete-modal-quechua">wasi</p>
+                        <p class="font-medium" id="delete-modal-quechua">-</p>
                     </div>
+                </div>
+                <div class="mt-2">
+                    <p class="text-sm text-gray-500">Creada:</p>
+                    <p class="font-medium" id="delete-modal-date">-</p>
                 </div>
             </div>
         </div>
@@ -155,139 +170,458 @@
         </div>
     </div>
 </div>
+
+<!-- Modal de edición -->
+<div id="edit-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg max-w-lg w-full p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-gray-800">Editar traducción</h3>
+            <button class="text-gray-500 hover:text-gray-700 focus:outline-none modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="edit-form">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Palabra en español</label>
+                <input type="text" id="edit-spanish" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Palabra en quechua</label>
+                <input type="text" id="edit-quechua" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div class="mb-6">
+                <label class="flex items-center">
+                    <input type="checkbox" id="edit-allow-download" class="mr-2">
+                    <span class="text-sm text-gray-700">Permitir descarga del audio</span>
+                </label>
+            </div>
+            <div class="flex justify-end space-x-3">
+                <button type="button" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 modal-close">
+                    Cancelar
+                </button>
+                <button type="submit" class="px-4 py-2 bg-blue-600 rounded-md text-sm font-medium text-white hover:bg-blue-700">
+                    Guardar cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Simulación de datos para la tabla
-        // En una implementación real, estos datos vendrían de una API
-        const mockTranslations = [
-            { id: 1, spanish: 'casa', quechua: 'wasi', audio: 'audio1.webm', translator: 'Juan Pérez', status: 'approved' },
-            { id: 2, spanish: 'hombre', quechua: 'qhari', audio: 'audio2.webm', translator: 'María López', status: 'pending' },
-            { id: 3, spanish: 'mujer', quechua: 'warmi', audio: 'audio3.webm', translator: 'José García', status: 'approved' },
-            { id: 4, spanish: 'niño', quechua: 'wawa', audio: 'audio4.webm', translator: 'Ana Martínez', status: 'pending' },
-            { id: 5, spanish: 'agua', quechua: 'yaku', audio: 'audio5.webm', translator: 'Carlos Rodríguez', status: 'approved' }
-        ];
+        let allTranslations = [];
+        let filteredTranslations = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
         
-        // Cargar tabla
-        loadTranslationsTable(mockTranslations);
+        // Cargar traducciones al inicializar
+        loadTranslations();
         
-        // Configurar modales
+        // Configurar eventos
+        setupEventListeners();
         setupModals();
         
-        // Función para cargar la tabla de traducciones
-        function loadTranslationsTable(translations) {
-            const tableBody = document.getElementById('translations-table');
-            tableBody.innerHTML = '';
+        function loadTranslations() {
+            fetch('/api/translations')
+                .then(response => response.json())
+                .then(data => {
+                    allTranslations = data;
+                    filteredTranslations = [...allTranslations];
+                    updateStatistics();
+                    renderTable();
+                    updatePagination();
+                })
+                .catch(error => {
+                    console.error('Error al cargar traducciones:', error);
+                    showError('Error al cargar las traducciones. Inténtalo de nuevo más tarde.');
+                });
+        }
+        
+        function updateStatistics() {
+            const total = allTranslations.length;
+            const withAudio = allTranslations.filter(t => t.audio_path).length;
+            const downloadable = allTranslations.filter(t => t.allow_download).length;
+            const published = allTranslations.filter(t => t.spanish_word && t.quechua_word && t.audio_path).length;
             
-            if (translations.length === 0) {
+            document.getElementById('total-count').textContent = total;
+            document.getElementById('published-count').textContent = published;
+            document.getElementById('audio-count').textContent = withAudio;
+            document.getElementById('downloadable-count').textContent = downloadable;
+        }
+        
+        function renderTable() {
+            const tableBody = document.getElementById('translations-table');
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageTranslations = filteredTranslations.slice(startIndex, endIndex);
+            
+            if (pageTranslations.length === 0) {
                 tableBody.innerHTML = `
                     <tr>
-                        <td class="px-6 py-4 text-sm text-gray-500" colspan="7">
-                            No se encontraron traducciones
+                        <td class="px-6 py-8 text-center text-gray-500" colspan="7">
+                            <div class="flex flex-col items-center">
+                                <i class="fas fa-search text-4xl text-gray-300 mb-3"></i>
+                                <p class="text-lg font-medium">No se encontraron traducciones</p>
+                                <p class="text-sm mt-1">Intenta ajustar los filtros de búsqueda</p>
+                            </div>
                         </td>
                     </tr>
                 `;
                 return;
             }
             
-            translations.forEach(item => {
-                const statusBadge = item.status === 'approved' 
-                    ? `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Aprobado</span>`
-                    : `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pendiente</span>`;
+            tableBody.innerHTML = '';
+            
+            pageTranslations.forEach(item => {
+                const date = new Date(item.created_at);
+                const formattedDate = date.toLocaleDateString('es-ES', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
                 
-                const actions = item.status === 'pending'
-                    ? `
-                        <button class="text-green-600 hover:text-green-800 mr-3 approve-btn" data-id="${item.id}" data-spanish="${item.spanish}" data-quechua="${item.quechua}" data-translator="${item.translator}">
-                            <i class="fas fa-check-circle"></i>
+                const audioCell = item.audio_path 
+                    ? `<audio src="/audio/${item.audio_path}" controls class="h-8 w-full max-w-xs"></audio>`
+                    : '<span class="text-gray-400 text-sm"><i class="fas fa-volume-mute mr-1"></i>Sin audio</span>';
+                
+                const statusBadge = (item.spanish_word && item.quechua_word && item.audio_path)
+                    ? '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Completa</span>'
+                    : '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Incompleta</span>';
+                
+                const downloadIcon = item.allow_download 
+                    ? '<i class="fas fa-download text-green-500" title="Descargable"></i>'
+                    : '<i class="fas fa-lock text-gray-400" title="No descargable"></i>';
+                
+                const translator = item.translator || 'Admin';
+                
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="px-6 py-4 text-sm text-gray-500">${item.id}</td>
+                    <td class="px-6 py-4 text-sm">
+                        <div class="font-medium text-gray-900">${item.spanish_word}</div>
+                        <div class="text-xs text-gray-500">${formattedDate}</div>
+                    </td>
+                    <td class="px-6 py-4 text-sm">
+                        <div class="text-indigo-600 font-medium">${item.quechua_word}</div>
+                        <div class="text-xs text-gray-500">Por: ${translator}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center space-x-2">
+                            ${audioCell}
+                            ${downloadIcon}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-500">${translator}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${statusBadge}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button class="text-blue-600 hover:text-blue-800 mr-3 edit-btn" 
+                                data-id="${item.id}" 
+                                data-spanish="${item.spanish_word}" 
+                                data-quechua="${item.quechua_word}"
+                                data-download="${item.allow_download}"
+                                title="Editar">
+                            <i class="fas fa-edit"></i>
                         </button>
-                      `
-                    : '';
-                
-                tableBody.innerHTML += `
-                    <tr>
-                        <td class="px-6 py-4 text-sm text-gray-500">${item.id}</td>
-                        <td class="px-6 py-4 text-sm font-medium text-gray-900">${item.spanish}</td>
-                        <td class="px-6 py-4 text-sm text-indigo-600">${item.quechua}</td>
-                        <td class="px-6 py-4">
-                            <audio src="/audio/${item.audio}" controls class="h-8"></audio>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-gray-500">${item.translator}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            ${statusBadge}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            ${actions}
-                            <button class="text-blue-600 hover:text-blue-800 mr-3">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="text-red-600 hover:text-red-800 delete-btn" data-id="${item.id}" data-spanish="${item.spanish}" data-quechua="${item.quechua}">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </td>
-                    </tr>
+                        <button class="text-red-600 hover:text-red-800 delete-btn" 
+                                data-id="${item.id}" 
+                                data-spanish="${item.spanish_word}" 
+                                data-quechua="${item.quechua_word}"
+                                data-date="${formattedDate}"
+                                title="Eliminar">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
                 `;
+                
+                tableBody.appendChild(row);
             });
             
-            // Configurar botones de acción
-            document.querySelectorAll('.approve-btn').forEach(btn => {
+            // Configurar eventos de botones
+            setupActionButtons();
+        }
+        
+        function setupActionButtons() {
+            // Botones de editar
+            document.querySelectorAll('.edit-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const id = this.getAttribute('data-id');
                     const spanish = this.getAttribute('data-spanish');
                     const quechua = this.getAttribute('data-quechua');
-                    const translator = this.getAttribute('data-translator');
+                    const allowDownload = this.getAttribute('data-download') === 'true';
                     
-                    document.getElementById('modal-spanish').textContent = spanish;
-                    document.getElementById('modal-quechua').textContent = quechua;
-                    document.getElementById('modal-translator').textContent = translator;
-                    
-                    document.getElementById('confirm-approve').setAttribute('data-id', id);
-                    document.getElementById('approval-modal').classList.remove('hidden');
+                    document.getElementById('edit-spanish').value = spanish;
+                    document.getElementById('edit-quechua').value = quechua;
+                    document.getElementById('edit-allow-download').checked = allowDownload;
+                    document.getElementById('edit-form').setAttribute('data-id', id);
+                    document.getElementById('edit-modal').classList.remove('hidden');
                 });
             });
             
+            // Botones de eliminar
             document.querySelectorAll('.delete-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const id = this.getAttribute('data-id');
                     const spanish = this.getAttribute('data-spanish');
                     const quechua = this.getAttribute('data-quechua');
+                    const date = this.getAttribute('data-date');
                     
                     document.getElementById('delete-modal-spanish').textContent = spanish;
                     document.getElementById('delete-modal-quechua').textContent = quechua;
-                    
+                    document.getElementById('delete-modal-date').textContent = date;
                     document.getElementById('confirm-delete').setAttribute('data-id', id);
                     document.getElementById('delete-modal').classList.remove('hidden');
                 });
             });
         }
         
-        // Configurar modales
+        function updatePagination() {
+            const totalItems = filteredTranslations.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            const startIndex = (currentPage - 1) * itemsPerPage + 1;
+            const endIndex = Math.min(currentPage * itemsPerPage, totalItems);
+            
+            document.getElementById('showing-start').textContent = totalItems > 0 ? startIndex : 0;
+            document.getElementById('showing-end').textContent = endIndex;
+            document.getElementById('total-items').textContent = totalItems;
+            
+            document.getElementById('prev-page').disabled = currentPage <= 1;
+            document.getElementById('next-page').disabled = currentPage >= totalPages;
+        }
+        
+        function applyFilters() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const audioFilter = document.getElementById('audio-filter').value;
+            const downloadFilter = document.getElementById('download-filter').value;
+            
+            filteredTranslations = allTranslations.filter(item => {
+                // Filtro de búsqueda
+                const matchesSearch = !searchTerm || 
+                    item.spanish_word.toLowerCase().includes(searchTerm) ||
+                    item.quechua_word.toLowerCase().includes(searchTerm);
+                
+                // Filtro de audio
+                const matchesAudio = audioFilter === 'all' ||
+                    (audioFilter === 'with-audio' && item.audio_path) ||
+                    (audioFilter === 'without-audio' && !item.audio_path);
+                
+                // Filtro de descarga
+                const matchesDownload = downloadFilter === 'all' ||
+                    (downloadFilter === 'downloadable' && item.allow_download) ||
+                    (downloadFilter === 'not-downloadable' && !item.allow_download);
+                
+                return matchesSearch && matchesAudio && matchesDownload;
+            });
+            
+            currentPage = 1;
+            renderTable();
+            updatePagination();
+        }
+        
+        function setupEventListeners() {
+            // Búsqueda con debounce
+            let searchTimeout;
+            document.getElementById('search-input').addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(applyFilters, 300);
+            });
+            
+            // Filtros
+            document.getElementById('audio-filter').addEventListener('change', applyFilters);
+            document.getElementById('download-filter').addEventListener('change', applyFilters);
+            
+            // Botón de actualizar
+            document.getElementById('refresh-btn').addEventListener('click', loadTranslations);
+            
+            // Paginación
+            document.getElementById('prev-page').addEventListener('click', function() {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderTable();
+                    updatePagination();
+                }
+            });
+            
+            document.getElementById('next-page').addEventListener('click', function() {
+                const totalPages = Math.ceil(filteredTranslations.length / itemsPerPage);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderTable();
+                    updatePagination();
+                }
+            });
+        }
+        
+        // ===== FUNCIONES CORREGIDAS CON APIS REALES =====
         function setupModals() {
             // Cerrar modales
             document.querySelectorAll('.modal-close').forEach(btn => {
                 btn.addEventListener('click', function() {
-                    document.getElementById('approval-modal').classList.add('hidden');
                     document.getElementById('delete-modal').classList.add('hidden');
+                    document.getElementById('edit-modal').classList.add('hidden');
                 });
             });
             
-            // Botón de confirmar aprobación
-            document.getElementById('confirm-approve').addEventListener('click', function() {
+            // Formulario de edición REAL
+            document.getElementById('edit-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
                 const id = this.getAttribute('data-id');
-                // Aquí iría la lógica para aprobar la traducción
-                alert('Traducción aprobada: ' + id);
-                document.getElementById('approval-modal').classList.add('hidden');
+                const spanishWord = document.getElementById('edit-spanish').value.trim();
+                const quechuaWord = document.getElementById('edit-quechua').value.trim();
+                const allowDownload = document.getElementById('edit-allow-download').checked;
+                
+                if (!spanishWord || !quechuaWord) {
+                    showNotification('Todos los campos son obligatorios', 'error');
+                    return;
+                }
+                
+                // Deshabilitar botón
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Guardando...';
+                
+                // Enviar actualización al servidor
+                fetch(`/api/admin/translation/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        spanish_word: spanishWord,
+                        quechua_word: quechuaWord,
+                        allow_download: allowDownload
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification(data.message, 'success');
+                        document.getElementById('edit-modal').classList.add('hidden');
+                        
+                        // Recargar datos
+                        loadTranslations();
+                    } else {
+                        showNotification(data.error || 'Error al actualizar la traducción', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Error de conexión. Inténtalo de nuevo.', 'error');
+                })
+                .finally(() => {
+                    // Restaurar botón
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                });
             });
             
-            // Botón de confirmar eliminación
+            // Confirmar eliminación REAL
             document.getElementById('confirm-delete').addEventListener('click', function() {
                 const id = this.getAttribute('data-id');
-                // Aquí iría la lógica para eliminar la traducción
-                alert('Traducción eliminada: ' + id);
-                document.getElementById('delete-modal').classList.add('hidden');
+                
+                // Deshabilitar botón
+                this.disabled = true;
+                this.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Eliminando...';
+                
+                // Enviar eliminación al servidor
+                fetch(`/api/admin/translation/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification(data.message, 'success');
+                        document.getElementById('delete-modal').classList.add('hidden');
+                        
+                        // Recargar datos
+                        loadTranslations();
+                    } else {
+                        showNotification(data.error || 'Error al eliminar la traducción', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Error de conexión. Inténtalo de nuevo.', 'error');
+                })
+                .finally(() => {
+                    // Restaurar botón
+                    this.disabled = false;
+                    this.innerHTML = 'Eliminar';
+                    
+                    // Cerrar modal en caso de error
+                    document.getElementById('delete-modal').classList.add('hidden');
+                });
             });
         }
+        
+        // Función para mostrar notificaciones
+        function showNotification(message, type) {
+            // Remover notificación existente si hay alguna
+            const existingNotification = document.querySelector('.notification-toast');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+            
+            const notification = document.createElement('div');
+            notification.className = `notification-toast fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm transform transition-all duration-300 ease-in-out ${type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`;
+            notification.style.transform = 'translateX(100%)';
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-${type === 'success' ? 'check' : 'exclamation'}-circle mr-2"></i>
+                    <span class="flex-1">${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-white hover:text-gray-200 focus:outline-none">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Animar entrada
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 10);
+            
+            // Auto-remover después de 5 segundos
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.style.transform = 'translateX(100%)';
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.remove();
+                        }
+                    }, 300);
+                }
+            }, 5000);
+        }
+        
+        // Función mejorada para mostrar errores
+        function showError(message) {
+            const tableBody = document.getElementById('translations-table');
+            tableBody.innerHTML = `
+                <tr>
+                    <td class="px-6 py-8 text-center text-red-500" colspan="7">
+                        <div class="flex flex-col items-center">
+                            <i class="fas fa-exclamation-triangle text-4xl text-red-300 mb-3"></i>
+                            <p class="text-lg font-medium">${message}</p>
+                            <button onclick="loadTranslations()" class="mt-3 bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg transition-colors">
+                                <i class="fas fa-sync-alt mr-1"></i> Intentar de nuevo
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+        
+        // Exponer loadTranslations globalmente para botones de retry
+        window.loadTranslations = loadTranslations;
     });
 </script>
 {% endblock %}

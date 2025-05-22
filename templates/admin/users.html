@@ -33,8 +33,13 @@
                         <select id="role-filter" class="rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                             <option value="all">Todos los roles</option>
                             <option value="admin">Administradores</option>
-                            <option value="translator">Traductores</option>
                             <option value="user">Usuarios</option>
+                        </select>
+                        <select id="status-filter" class="rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="all">Todos los estados</option>
+                            <option value="active">Activos</option>
+                            <option value="inactive">Inactivos</option>
+                            <option value="unverified">No verificados</option>
                         </select>
                         <button id="refresh-btn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
                             <i class="fas fa-sync-alt"></i>
@@ -58,27 +63,98 @@
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200" id="users-table">
-                        <tr>
-                            <td class="px-6 py-4 text-sm text-gray-500" colspan="7">Cargando usuarios...</td>
-                        </tr>
+                        {% if users %}
+                            {% for user in users %}
+                            <tr>
+                                <td class="px-6 py-4 text-sm text-gray-500">{{ user.id }}</td>
+                                <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ user.username }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-500">{{ user.email }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-500">{{ user.full_name }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {% if user.role_name == 'admin' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                        Administrador
+                                    </span>
+                                    {% else %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                        Usuario
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {% if not user.is_verified %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                        No verificado
+                                    </span>
+                                    {% elif user.is_active %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        Activo
+                                    </span>
+                                    {% else %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        Inactivo
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <button class="text-blue-600 hover:text-blue-800 mr-3 change-role-btn" data-id="{{ user.id }}" data-username="{{ user.username }}" data-role="{{ user.role_name }}">
+                                        <i class="fas fa-user-tag"></i>
+                                    </button>
+                                
+                                    {% if user.is_verified %}
+                                        {% if user.is_active %}
+                                        <button class="text-yellow-600 hover:text-yellow-800 mr-3 status-btn" data-id="{{ user.id }}" data-username="{{ user.username }}" data-action="deactivate">
+                                            <i class="fas fa-user-slash"></i>
+                                        </button>
+                                        {% else %}
+                                        <button class="text-green-600 hover:text-green-800 mr-3 status-btn" data-id="{{ user.id }}" data-username="{{ user.username }}" data-action="activate">
+                                            <i class="fas fa-user-check"></i>
+                                        </button>
+                                        {% endif %}
+                                    {% else %}
+                                        <button class="text-green-600 hover:text-green-800 mr-3 verify-btn" data-id="{{ user.id }}" data-username="{{ user.username }}">
+                                            <i class="fas fa-user-check"></i>
+                                        </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td class="px-6 py-4 text-sm text-gray-500 text-center" colspan="7">
+                                    No se encontraron usuarios
+                                </td>
+                            </tr>
+                        {% endif %}
                     </tbody>
                 </table>
             </div>
             
             <!-- Paginación -->
-            <div class="flex justify-between items-center mt-6">
-                <div class="text-sm text-gray-500" id="pagination-info">
-                    Mostrando <span id="showing-start">1</span> a <span id="showing-end">10</span> de <span id="total-items">15</span> usuarios
-                </div>
-                <div class="flex space-x-2">
-                    <button id="prev-page" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
-                        Anterior
-                    </button>
-                    <button id="next-page" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
-                        Siguiente
-                    </button>
-                </div>
-            </div>
+            <!-- Paginación -->
+{% if total_users > 0 %}
+<div class="flex justify-between items-center mt-6">
+    <div class="text-sm text-gray-500" id="pagination-info">
+        Mostrando {{ (page - 1) * per_page + 1 }} a 
+        {% if (page * per_page) > total_users %}
+            {{ total_users }}
+        {% else %}
+            {{ (page * per_page) }}
+        {% endif %} 
+        de {{ total_users }} usuarios
+    </div>
+    <div class="flex space-x-2">
+        <a href="{{ url_for('admin_users', page=(page - 1) if page > 1 else 1, role=role_filter, status=status_filter) }}" 
+           class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 {{ 'opacity-50 cursor-not-allowed' if page == 1 else '' }}">
+            Anterior
+        </a>
+        <a href="{{ url_for('admin_users', page=(page + 1) if (page * per_page) < total_users else page, role=role_filter, status=status_filter) }}" 
+           class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 {{ 'opacity-50 cursor-not-allowed' if (page * per_page) >= total_users else '' }}">
+            Siguiente
+        </a>
+    </div>
+</div>
+{% endif %}
         </div>
     </div>
 </div>
@@ -100,12 +176,6 @@
                         <input type="radio" id="role-user" name="role" value="user" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500" checked>
                         <label for="role-user" class="ml-2 block text-sm text-gray-900">
                             Usuario regular
-                        </label>
-                    </div>
-                    <div class="flex items-center">
-                        <input type="radio" id="role-translator" name="role" value="translator" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
-                        <label for="role-translator" class="ml-2 block text-sm text-gray-900">
-                            Traductor certificado
                         </label>
                     </div>
                     <div class="flex items-center">
@@ -190,105 +260,111 @@
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Simulación de datos para la tabla
-        // En una implementación real, estos datos vendrían de una API
-        const mockUsers = [
-            { id: 1, username: 'admin', email: 'admin@quechuachanka.org', fullName: 'Administrador', role: 'admin', status: 'active', verified: true },
-            { id: 2, username: 'juanperez', email: 'juan@example.com', fullName: 'Juan Pérez', role: 'translator', status: 'active', verified: true },
-            { id: 3, username: 'marialopez', email: 'maria@example.com', fullName: 'María López', role: 'translator', status: 'active', verified: true },
-            { id: 4, username: 'carlosrodriguez', email: 'carlos@example.com', fullName: 'Carlos Rodríguez', role: 'user', status: 'active', verified: true },
-            { id: 5, username: 'anamartinez', email: 'ana@example.com', fullName: 'Ana Martínez', role: 'user', status: 'inactive', verified: true },
-            { id: 6, username: 'pedrogomez', email: 'pedro@example.com', fullName: 'Pedro Gómez', role: 'user', status: 'active', verified: false }
-        ];
-        
-        // Cargar tabla
-        loadUsersTable(mockUsers);
-        
         // Configurar modales
         setupModals();
         
-        // Función para cargar la tabla de usuarios
-        function loadUsersTable(users) {
-            const tableBody = document.getElementById('users-table');
-            tableBody.innerHTML = '';
+        // Configurar filtros
+        const roleFilter = document.getElementById('role-filter');
+        const statusFilter = document.getElementById('status-filter');
+        const refreshBtn = document.getElementById('refresh-btn');
+        
+        if (roleFilter && statusFilter && refreshBtn) {
+            // Establecer valores iniciales de filtros basados en URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const roleParam = urlParams.get('role');
+            const statusParam = urlParams.get('status');
             
-            if (users.length === 0) {
-                tableBody.innerHTML = `
-                    <tr>
-                        <td class="px-6 py-4 text-sm text-gray-500" colspan="7">
-                            No se encontraron usuarios
-                        </td>
-                    </tr>
-                `;
-                return;
+            if (roleParam) {
+                roleFilter.value = roleParam;
             }
             
-            users.forEach(user => {
-                // Role badge
-                let roleBadge = '';
-                if (user.role === 'admin') {
-                    roleBadge = '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">Administrador</span>';
-                } else if (user.role === 'translator') {
-                    roleBadge = '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Traductor</span>';
-                } else {
-                    roleBadge = '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">Usuario</span>';
-                }
-                
-                // Status badge
-                let statusBadge = '';
-                if (!user.verified) {
-                    statusBadge = '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">No verificado</span>';
-                } else if (user.status === 'active') {
-                    statusBadge = '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Activo</span>';
-                } else {
-                    statusBadge = '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Inactivo</span>';
-                }
-                
-                // Actions
-                let actions = `
-                    <button class="text-blue-600 hover:text-blue-800 mr-3 change-role-btn" data-id="${user.id}" data-username="${user.username}" data-role="${user.role}">
-                        <i class="fas fa-user-tag"></i>
-                    </button>
-                `;
-                
-                // Status toggle
-                if (user.verified) {
-                    const statusAction = user.status === 'active' 
-                        ? `<button class="text-yellow-600 hover:text-yellow-800 mr-3 status-btn" data-id="${user.id}" data-username="${user.username}" data-action="deactivate">
-                               <i class="fas fa-user-slash"></i>
-                           </button>`
-                        : `<button class="text-green-600 hover:text-green-800 mr-3 status-btn" data-id="${user.id}" data-username="${user.username}" data-action="activate">
-                               <i class="fas fa-user-check"></i>
-                           </button>`;
-                    
-                    actions += statusAction;
-                } else {
-                    // Verify action for unverified users
-                    actions += `
-                        <button class="text-green-600 hover:text-green-800 mr-3 verify-btn" data-id="${user.id}" data-username="${user.username}">
-                            <i class="fas fa-user-check"></i>
-                        </button>
-                    `;
-                }
-                
-                tableBody.innerHTML += `
-                    <tr>
-                        <td class="px-6 py-4 text-sm text-gray-500">${user.id}</td>
-                        <td class="px-6 py-4 text-sm font-medium text-gray-900">${user.username}</td>
-                        <td class="px-6 py-4 text-sm text-gray-500">${user.email}</td>
-                        <td class="px-6 py-4 text-sm text-gray-500">${user.fullName}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            ${roleBadge}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            ${statusBadge}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            ${actions}
-                        </td>
-                    </tr>
-                `;
+            if (statusParam) {
+                statusFilter.value = statusParam;
+            }
+            
+            // Configurar eventos de cambio
+            roleFilter.addEventListener('change', applyFilters);
+            statusFilter.addEventListener('change', applyFilters);
+            refreshBtn.addEventListener('click', function() {
+                window.location.reload();
             });
+        }
+        
+        // Filtro de búsqueda con debounce
+        const searchInput = document.getElementById('search-input');
+        if (searchInput) {
+            let debounceTimeout;
+            
+            searchInput.addEventListener('input', function() {
+                clearTimeout(debounceTimeout);
+                
+                debounceTimeout = setTimeout(() => {
+                    const searchTerm = this.value.trim().toLowerCase();
+                    
+                    // Filtrar filas de la tabla
+                    const tableRows = document.querySelectorAll('#users-table tr:not(:first-child)');
+                    let visibleCount = 0;
+                    
+                    tableRows.forEach(row => {
+                        const username = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                        const email = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                        const fullName = row.querySelector('td:nth-child(4)').textContent.toLowerCase();
+                        
+                        if (username.includes(searchTerm) || email.includes(searchTerm) || fullName.includes(searchTerm)) {
+                            row.classList.remove('hidden');
+                            visibleCount++;
+                        } else {
+                            row.classList.add('hidden');
+                        }
+                    });
+                    
+                    // Mostrar mensaje si no hay resultados
+                    const noResultsRow = document.getElementById('no-results-row');
+                    if (visibleCount === 0 && searchTerm) {
+                        if (!noResultsRow) {
+                            const newRow = document.createElement('tr');
+                            newRow.id = 'no-results-row';
+                            newRow.innerHTML = `
+                                <td class="px-6 py-4 text-sm text-gray-500 text-center" colspan="7">
+                                    No se encontraron resultados para "${searchTerm}"
+                                </td>
+                            `;
+                            document.getElementById('users-table').appendChild(newRow);
+                        }
+                    } else if (noResultsRow) {
+                        noResultsRow.remove();
+                    }
+                }, 300);
+            });
+        }
+        
+        function applyFilters() {
+            const role = roleFilter.value;
+            const status = statusFilter.value;
+            
+            let url = '{{ url_for("admin_users") }}?';
+            
+            if (role !== 'all') {
+                url += `role=${role}&`;
+            }
+            
+            if (status !== 'all') {
+                url += `status=${status}&`;
+            }
+            
+            // Eliminar el último & si existe
+            if (url.endsWith('&')) {
+                url = url.slice(0, -1);
+            }
+            
+            window.location.href = url;
+        }
+        
+        function setupModals() {
+            // Referencias a los modales
+            const roleModal = document.getElementById('role-modal');
+            const verifyModal = document.getElementById('verify-modal');
+            const statusModal = document.getElementById('status-modal');
             
             // Configurar botones de acción
             document.querySelectorAll('.change-role-btn').forEach(btn => {
@@ -299,11 +375,11 @@
                     
                     document.getElementById('modal-username').textContent = username;
                     
-                    // Seleccionar el rol actual
+                    // Establecer el rol actual en el modal
                     document.querySelector(`input[name="role"][value="${role}"]`).checked = true;
                     
                     document.getElementById('confirm-role-change').setAttribute('data-id', id);
-                    document.getElementById('role-modal').classList.remove('hidden');
+                    roleModal.classList.remove('hidden');
                 });
             });
             
@@ -314,7 +390,7 @@
                     
                     document.getElementById('verify-modal-username').textContent = username;
                     document.getElementById('confirm-verify').setAttribute('data-id', id);
-                    document.getElementById('verify-modal').classList.remove('hidden');
+                    verifyModal.classList.remove('hidden');
                 });
             });
             
@@ -360,49 +436,162 @@
                     confirmBtn.setAttribute('data-id', id);
                     confirmBtn.setAttribute('data-action', action);
                     
-                    document.getElementById('status-modal').classList.remove('hidden');
+                    statusModal.classList.remove('hidden');
                 });
             });
-        }
-        
-        // Configurar modales
-        function setupModals() {
+            
             // Cerrar modales
             document.querySelectorAll('.modal-close').forEach(btn => {
                 btn.addEventListener('click', function() {
-                    document.getElementById('role-modal').classList.add('hidden');
-                    document.getElementById('verify-modal').classList.add('hidden');
-                    document.getElementById('status-modal').classList.add('hidden');
+                    roleModal.classList.add('hidden');
+                    verifyModal.classList.add('hidden');
+                    statusModal.classList.add('hidden');
                 });
             });
             
-            // Botón de confirmar cambio de rol
+            // Confirmar cambio de rol
             document.getElementById('confirm-role-change').addEventListener('click', function() {
-                const id = this.getAttribute('data-id');
-                const role = document.querySelector('input[name="role"]:checked').value;
+                const userId = this.getAttribute('data-id');
+                const newRole = document.querySelector('input[name="role"]:checked').value;
                 
-                // Aquí iría la lógica para cambiar el rol
-                alert(`Cambio de rol para usuario ${id}: ${role}`);
-                document.getElementById('role-modal').classList.add('hidden');
+                // Deshabilitar botón mientras se procesa
+                this.disabled = true;
+                this.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Guardando...';
+                
+                // Enviar solicitud al servidor
+                fetch('/api/admin/change-user-role', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        role: newRole
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Recargar la página para mostrar los cambios
+                        window.location.reload();
+                    } else {
+                        alert(data.error || 'Error al cambiar el rol del usuario');
+                        
+                        // Restaurar botón
+                        this.disabled = false;
+                        this.innerHTML = 'Guardar cambios';
+                        
+                        // Cerrar modal
+                        roleModal.classList.add('hidden');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error de conexión. Inténtalo de nuevo más tarde.');
+                    
+                    // Restaurar botón
+                    this.disabled = false;
+                    this.innerHTML = 'Guardar cambios';
+                    
+                    // Cerrar modal
+                    roleModal.classList.add('hidden');
+                });
             });
             
-            // Botón de confirmar verificación
+            // Confirmar verificación de usuario
             document.getElementById('confirm-verify').addEventListener('click', function() {
-                const id = this.getAttribute('data-id');
+                const userId = this.getAttribute('data-id');
                 
-                // Aquí iría la lógica para verificar al usuario
-                alert(`Usuario verificado: ${id}`);
-                document.getElementById('verify-modal').classList.add('hidden');
+                // Deshabilitar botón mientras se procesa
+                this.disabled = true;
+                this.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Verificando...';
+                
+                // Enviar solicitud al servidor
+                fetch('/api/admin/verify-user', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        user_id: userId
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Recargar la página para mostrar los cambios
+                        window.location.reload();
+                    } else {
+                        alert(data.error || 'Error al verificar el usuario');
+                        
+                        // Restaurar botón
+                        this.disabled = false;
+                        this.innerHTML = 'Verificar cuenta';
+                        
+                        // Cerrar modal
+                        verifyModal.classList.add('hidden');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error de conexión. Inténtalo de nuevo más tarde.');
+                    
+                    // Restaurar botón
+                    this.disabled = false;
+                    this.innerHTML = 'Verificar cuenta';
+                    
+                    // Cerrar modal
+                    verifyModal.classList.add('hidden');
+                });
             });
             
-            // Botón de confirmar cambio de estado
+            // Confirmar cambio de estado (activar/desactivar)
             document.getElementById('confirm-status-change').addEventListener('click', function() {
-                const id = this.getAttribute('data-id');
+                const userId = this.getAttribute('data-id');
                 const action = this.getAttribute('data-action');
                 
-                // Aquí iría la lógica para cambiar el estado
-                alert(`Usuario ${id}: ${action}`);
-                document.getElementById('status-modal').classList.add('hidden');
+                // Deshabilitar botón mientras se procesa
+                this.disabled = true;
+                this.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Procesando...';
+                
+                // Enviar solicitud al servidor
+                fetch('/api/admin/change-user-status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        action: action
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Recargar la página para mostrar los cambios
+                        window.location.reload();
+                    } else {
+                        alert(data.error || 'Error al cambiar el estado del usuario');
+                        
+                        // Restaurar botón
+                        this.disabled = false;
+                        this.innerHTML = action === 'activate' ? 'Activar cuenta' : 'Desactivar cuenta';
+                        
+                        // Cerrar modal
+                        statusModal.classList.add('hidden');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error de conexión. Inténtalo de nuevo más tarde.');
+                    
+                    // Restaurar botón
+                    this.disabled = false;
+                    this.innerHTML = action === 'activate' ? 'Activar cuenta' : 'Desactivar cuenta';
+                    
+                    // Cerrar modal
+                    statusModal.classList.add('hidden');
+                });
             });
         }
     });

@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout - Traductor Quechua Chanka{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="p-6 sm:p-10">
+            <div class="flex items-center mb-6">
+                <i class="fas fa-credit-card text-3xl text-indigo-600 mr-4"></i>
+                <h1 class="text-3xl font-bold text-gray-800">Completar suscripción</h1>
+            </div>
+            
+            <div class="mb-8">
+                <p class="text-gray-600">
+                    Estás a un paso de acceder a todas las funciones del Traductor Quechua Chanka. 
+                    Por favor, completa la información para procesar tu pago.
+                </p>
+            </div>
+            
+            <!-- Resumen del pedido -->
+            <div class="bg-gray-50 p-6 rounded-lg border border-gray-200 mb-8">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Resumen de tu pedido</h2>
+                
+                <div class="flex justify-between mb-4 pb-4 border-b border-gray-200">
+                    <div>
+                        <h3 class="font-medium text-gray-800">{{ plan.name }}</h3>
+                        <p class="text-sm text-gray-600">{{ plan.description }}</p>
+                    </div>
+                    <div class="text-xl font-bold text-indigo-600">${{ "%.2f"|format(plan.price) }}</div>
+                </div>
+                
+                <div class="flex justify-between font-medium">
+                    <span class="text-gray-800">Total a pagar:</span>
+                    <span class="text-xl text-indigo-600">${{ "%.2f"|format(plan.price) }}</span>
+                </div>
+            </div>
+            
+            <!-- Formulario de pago -->
+            <form method="POST" action="{{ url_for('subscription_checkout', plan_id=plan.id) }}" class="space-y-6">
+                <div>
+                    <label for="card_name" class="block text-sm font-medium text-gray-700 mb-1">
+                        <i class="fas fa-user mr-1"></i> Nombre en la tarjeta
+                    </label>
+                    <input type="text" id="card_name" name="card_name" required 
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="Nombre completo como aparece en la tarjeta">
+                </div>
+                
+                <div>
+                    <label for="card_number" class="block text-sm font-medium text-gray-700 mb-1">
+                        <i class="fas fa-credit-card mr-1"></i> Número de tarjeta
+                    </label>
+                    <input type="text" id="card_number" name="card_number" required 
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="1234 5678 9012 3456">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="expiry_date" class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-calendar-alt mr-1"></i> Fecha de expiración
+                        </label>
+                        <input type="text" id="expiry_date" name="expiry_date" required 
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="MM/AA">
+                    </div>
+                    <div>
+                        <label for="cvv" class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-lock mr-1"></i> Código de seguridad (CVV)
+                        </label>
+                        <input type="text" id="cvv" name="cvv" required 
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="123">
+                    </div>
+                </div>
+                
+                <!-- Nota: Este es un formulario de demostración. En producción, usar un procesador de pagos seguro -->
+                <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200 text-sm text-yellow-800">
+                    <p><i class="fas fa-info-circle mr-1"></i> Esta es una demostración. En un entorno real, utilizaríamos un procesador de pagos seguro como Stripe, PayPal o MercadoPago.</p>
+                </div>
+                
+                <div class="pt-2">
+                    <button type="submit"
+                        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center">
+                        <i class="fas fa-check-circle mr-2"></i> Completar suscripción
+                    </button>
+                </div>
+                
+                <p class="text-center text-sm text-gray-500">
+                    Al completar tu compra, aceptas nuestros 
+                    <a href="#" class="text-indigo-600 hover:text-indigo-800">Términos de servicio</a> y 
+                    <a href="#" class="text-indigo-600 hover:text-indigo-800">Política de privacidad</a>.
+                </p>
+            </form>
+            
+            <div class="mt-8 text-center">
+                <a href="{{ url_for('subscription_plans') }}" class="text-indigo-600 hover:text-indigo-800 font-medium">
+                    <i class="fas fa-arrow-left mr-1"></i> Volver a los planes
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Simulación de formateo de tarjeta
+    document.addEventListener('DOMContentLoaded', function() {
+        // Formatear número de tarjeta con espacios cada 4 dígitos
+        const cardNumber = document.getElementById('card_number');
+        if (cardNumber) {
+            cardNumber.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+                let formattedValue = '';
+                
+                for (let i = 0; i < value.length; i++) {
+                    if (i > 0 && i % 4 === 0) {
+                        formattedValue += ' ';
+                    }
+                    formattedValue += value[i];
+                }
+                
+                e.target.value = formattedValue;
+            });
+        }
+        
+        // Formatear fecha de expiración
+        const expiryDate = document.getElementById('expiry_date');
+        if (expiryDate) {
+            expiryDate.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                
+                if (value.length > 2) {
+                    value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                }
+                
+                e.target.value = value;
+            });
+        }
+    });
+</script>
+{% endblock %}

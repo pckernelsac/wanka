@@ -23,13 +23,17 @@ else:
 if IN_AZURE:
     # En Azure, usar una carpeta persistente
     AUDIO_FOLDER = os.path.join(os.environ.get('HOME', ''), 'site', 'wwwroot', 'static', 'audio')
+    UPLOAD_FOLDER = os.path.join(os.environ.get('HOME', ''), 'site', 'wwwroot', 'static', 'vouchers')
 else:
     # Localmente
     AUDIO_FOLDER = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static', 'audio')
+    UPLOAD_FOLDER = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static', 'vouchers')
 
-# Asegurar que existe la carpeta de audio
+# Asegurar que existen las carpetas necesarias
 os.makedirs(AUDIO_FOLDER, exist_ok=True)
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+# Configuración de archivos
 MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB max tamaño de archivo
 
 # Configuración de sesiones
@@ -52,3 +56,11 @@ if IN_AZURE:
 else:
     # Localmente
     BASE_URL = os.environ.get('BASE_URL') or 'http://localhost:5000'
+
+# Configuración de pagos Yape
+YAPE_NUMBER = '968680379'
+YAPE_NAME = 'Traductor Quechua Chanka'
+
+# Extensiones de archivo permitidas para vouchers
+ALLOWED_VOUCHER_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf'}
+MAX_VOUCHER_SIZE = 5 * 1024 * 1024  # 5MB

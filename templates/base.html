@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Traductor Quechua Chanka{% endblock %}</title>
+    <title>{% block title %}Traductor Quechua Wanka{% endblock %}</title>
     
     <!-- Tailwind CSS desde CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -46,21 +46,21 @@
             <div class="flex justify-between items-center">
                 <div class="flex items-center space-x-3">
                     <i class="fas fa-language text-3xl"></i>
-                    <h1 class="text-2xl font-bold tracking-tight">Traductor Quechua Chanka</h1>
+                    <h1 class="text-2xl font-bold tracking-tight">Traductor Quechua Wanka</h1>
                 </div>
                 <nav class="hidden md:flex space-x-6">
                     <a href="{{ url_for('index') }}" class="hover:text-yellow-200 transition-colors">
                         <i class="fas fa-home mr-1"></i> Inicio
                     </a>
                     
-                    {% if session.get('user_role') == 'translator' or session.get('user_role') == 'admin' %}
+                    {% if session.get('user_role') == 'admin' %}
                     <a href="{{ url_for('translator_view') }}" class="hover:text-yellow-200 transition-colors">
-                        <i class="fas fa-microphone-alt mr-1"></i> Traductor
+                        <i class="fas fa-microphone-alt mr-1"></i> Añadir traducciones
                     </a>
                     {% endif %}
                     
                     <a href="{{ url_for('user_view') }}" class="hover:text-yellow-200 transition-colors">
-                        <i class="fas fa-headphones mr-1"></i> Consultar
+                        <i class="fas fa-headphones mr-1"></i> Consultar traducciones
                     </a>
                     
                     {% if session.get('user_role') == 'admin' %}
@@ -80,14 +80,13 @@
                                 <i class="fas fa-chevron-down ml-2 text-xs"></i>
                             </button>
                             <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 hidden group-hover:block">
-                                {% if session.get('user_role') == 'user' %}
-                                <a href="{{ url_for('request_translator') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    <i class="fas fa-language mr-2"></i> Solicitar ser traductor
+                                <a href="{{ url_for('user_profile') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+            <i class="fas fa-user mr-2"></i> Mi perfil
+        </a>
+                                <a href="{{ url_for('manage_subscription') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-id-card mr-2"></i> Mi suscripción
                                 </a>
-                                {% endif %}
-                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    <i class="fas fa-user-cog mr-2"></i> Mi perfil
-                                </a>
+                                
                                 <div class="border-t border-gray-100"></div>
                                 <a href="{{ url_for('logout') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     <i class="fas fa-sign-out-alt mr-2"></i> Cerrar sesión
@@ -116,15 +115,24 @@
                         <i class="fas fa-home mr-1"></i> Inicio
                     </a>
                     
-                    {% if session.get('user_role') == 'translator' or session.get('user_role') == 'admin' %}
+                    {% if session.get('user_role') == 'admin' %}
                     <a href="{{ url_for('translator_view') }}" class="hover:text-yellow-200 transition-colors">
-                        <i class="fas fa-microphone-alt mr-1"></i> Traductor
+                        <i class="fas fa-microphone-alt mr-1"></i> Añadir traducciones
                     </a>
                     {% endif %}
                     
                     <a href="{{ url_for('user_view') }}" class="hover:text-yellow-200 transition-colors">
-                        <i class="fas fa-headphones mr-1"></i> Consultar
+                        <i class="fas fa-headphones mr-1"></i> Consultar traducciones
                     </a>
+
+                    {% if session.get('user_role') == 'admin' %}
+<a href="{{ url_for('translator_view') }}" class="hover:text-yellow-200 transition-colors">
+    <i class="fas fa-microphone-alt mr-1"></i> Añadir traducciones
+</a>
+<a href="{{ url_for('admin_vouchers') }}" class="hover:text-yellow-200 transition-colors">
+    <i class="fas fa-receipt mr-1"></i> Validar vouchers
+</a>
+{% endif %}
                     
                     {% if session.get('user_role') == 'admin' %}
                     <a href="{{ url_for('admin_dashboard') }}" class="hover:text-yellow-200 transition-colors">
@@ -138,17 +146,16 @@
                         <div class="text-sm text-white/80">
                             <i class="fas fa-user-circle mr-1"></i> {{ session.get('username') }}
                         </div>
+
+                        <a href="{{ url_for('user_profile') }}" class="hover:text-yellow-200 transition-colors text-sm pl-2">
+        <i class="fas fa-user mr-1"></i> Mi perfil
+    </a>
                         
-                        {% if session.get('user_role') == 'user' %}
-                        <a href="{{ url_for('request_translator') }}" class="hover:text-yellow-200 transition-colors text-sm pl-2">
-                            <i class="fas fa-language mr-1"></i> Solicitar ser traductor
-                        </a>
-                        {% endif %}
-                        
-                        <a href="#" class="hover:text-yellow-200 transition-colors text-sm pl-2">
-                            <i class="fas fa-user-cog mr-1"></i> Mi perfil
+                        <a href="{{ url_for('manage_subscription') }}" class="hover:text-yellow-200 transition-colors text-sm pl-2">
+                            <i class="fas fa-id-card mr-1"></i> Mi suscripción
                         </a>
                         
+                                               
                         <a href="{{ url_for('logout') }}" class="hover:text-yellow-200 transition-colors">
                             <i class="fas fa-sign-out-alt mr-1"></i> Cerrar sesión
                         </a>
@@ -173,7 +180,7 @@
         <div class="container mx-auto px-4">
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <div class="mb-4 md:mb-0">
-                    <h3 class="text-xl font-semibold mb-2">Traductor Quechua Chanka</h3>
+                    <h3 class="text-xl font-semibold mb-2">Traductor Quechua Wanka</h3>
                     <p class="text-gray-300">Preservando nuestro idioma ancestral a través de la tecnología moderna</p>
                 </div>
                 <div class="flex space-x-4">
@@ -192,7 +199,7 @@
                 </div>
             </div>
             <hr class="border-gray-600 my-6">
-            <p class="text-center text-gray-400">© 2025 Traductor Quechua Chanka. Todos los derechos reservados.</p>
+            <p class="text-center text-gray-400">© 2025 Traductor Quechua Wanka. Todos los derechos reservados. Grupo Pckernel</p>
         </div>
     </footer>
 
